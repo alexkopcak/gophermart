@@ -1,8 +1,6 @@
 package app
 
 import (
-	"time"
-
 	"github.com/alexkopcak/gophermart/internal/auth"
 	"github.com/alexkopcak/gophermart/internal/auth/repository/localstorage"
 	"github.com/alexkopcak/gophermart/internal/auth/usecase"
@@ -28,7 +26,7 @@ func NewApp(cfg *config.Config) *App {
 		authUC: usecase.NewAuthUseCase(userRepo,
 			cfg.HashSalt,
 			cfg.SigningKey,
-			time.Duration(cfg.TokenTTL*int(time.Second))),
+			cfg.TokenTTL),
 	}
 }
 

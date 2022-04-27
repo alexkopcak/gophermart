@@ -27,12 +27,12 @@ type AuthUseCase struct {
 func NewAuthUseCase(userRepo auth.UserRepository,
 	hashSalt string,
 	signingKey string,
-	tokenTTL time.Duration) auth.UseCase {
+	tokenTTL int) auth.UseCase {
 	return &AuthUseCase{
 		userRepo:       userRepo,
 		hashSalt:       hashSalt,
 		signingKey:     []byte(signingKey),
-		expireDuration: tokenTTL,
+		expireDuration: time.Duration(tokenTTL) * time.Second,
 	}
 }
 

@@ -1,4 +1,4 @@
-package httpserver
+package handlers
 
 import (
 	"net/http"
@@ -11,14 +11,17 @@ import (
 func AuthMiddlewareHandle(auc auth.UseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("enter")
+
 		token, err := c.Cookie("Authorization")
 		log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Str("token", token).Msg("get token value")
+
 		if token == "" || err != nil {
 			c.String(http.StatusUnauthorized, "пользователь не аутентифицирован")
 			c.Abort()
 			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("exit with error")
 			return
 		}
+
 		user, err := auc.ParseToken(c.Request.Context(), token)
 		if user != nil {
 			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Str("user", user.UserName).Str("pass", user.Password).Msg("")
@@ -26,6 +29,7 @@ func AuthMiddlewareHandle(auc auth.UseCase) gin.HandlerFunc {
 		if err != nil {
 			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Str("error", err.Error()).Msg("")
 		}
+
 		if err != nil || user.UserName == "" {
 			c.String(http.StatusUnauthorized, "пользователь не аутентифицирован")
 			c.Abort()
@@ -33,7 +37,8 @@ func AuthMiddlewareHandle(auc auth.UseCase) gin.HandlerFunc {
 			return
 		}
 		log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("exit")
-		c.Set("user", user)
+
+		c.Set(auth.CtxUserKey, user.UserName)
 		c.Next()
 	}
 }

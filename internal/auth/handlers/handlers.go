@@ -1,4 +1,4 @@
-package httpserver
+package handlers
 
 import (
 	"encoding/json"
@@ -34,7 +34,7 @@ func (h *AuthHandler) SignUp(c *gin.Context) {
 	err = json.NewDecoder(c.Request.Body).Decode(&user)
 
 	if err != nil || user.UserName == "" {
-		c.String(http.StatusBadRequest, "неверный формат запроса")
+		c.String(http.StatusBadRequest, "неверный формат запроса", err.Error())
 		return
 	}
 
@@ -90,5 +90,6 @@ func (h *AuthHandler) SignIn(c *gin.Context) {
 }
 
 func (h *AuthHandler) Test(c *gin.Context) {
-	c.String(http.StatusOK, "вызов Test")
+	user := c.GetString(auth.CtxUserKey)
+	c.String(http.StatusOK, "вызов Test от "+user)
 }
