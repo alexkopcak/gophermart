@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/alexkopcak/gophermart/internal/auth"
-	"github.com/alexkopcak/gophermart/internal/auth/repository/localstorage"
+	db "github.com/alexkopcak/gophermart/internal/auth/repository/postgres"
 	"github.com/alexkopcak/gophermart/internal/auth/usecase"
 	"github.com/gin-gonic/gin"
 
@@ -19,7 +19,8 @@ type App struct {
 }
 
 func NewApp(cfg *config.Config) *App {
-	userRepo := localstorage.NewUserLocalStorage()
+	//userRepo := localstorage.NewUserLocalStorage()
+	userRepo := db.NewPostgresStorage(cfg.DataBaseURI)
 
 	return &App{
 		config: cfg,
