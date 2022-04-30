@@ -28,8 +28,9 @@ func (h *AuthHandler) SignUp(c *gin.Context) {
 	//defer c.Request.Body.Close()
 
 	if strings.Compare(c.ContentType(), "application/json") != 0 {
-		c.String(http.StatusBadRequest, "неверный формат запроса")
 		log.Debug().Str("package", "handlers").Str("func", "SignUp").Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
+		c.String(http.StatusBadRequest, "неверный формат запроса")
+		c.Abort()
 		return
 	}
 
@@ -37,27 +38,31 @@ func (h *AuthHandler) SignUp(c *gin.Context) {
 	err = json.NewDecoder(c.Request.Body).Decode(&user)
 
 	if err != nil || user.UserName == "" {
-		c.String(http.StatusBadRequest, "неверный формат запроса", err.Error())
 		log.Debug().Str("package", "handlers").Str("func", "SignUp").Str("user", user.UserName).Msg("exit with error: empty user name")
+		c.String(http.StatusBadRequest, "неверный формат запроса", err.Error())
+		c.Abort()
 		return
 	}
 
 	err = h.AuthUseCase.SignUp(c.Request.Context(), user.UserName, user.Password)
 	if errors.Is(err, auth.ErrUserAlreadyExsist) {
-		c.String(http.StatusConflict, "логин уже занят")
 		log.Debug().Str("package", "handlers").Str("func", "SignUp").Msg("exit with error: user already exsist")
+		c.String(http.StatusConflict, "логин уже занят")
+		c.Abort()
 		return
 	}
 	if err != nil {
-		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		log.Debug().Str("package", "handlers").Str("func", "SignUp").Msg("exit with error: something went wrong")
+		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
+		c.Abort()
 		return
 	}
 
 	token, err := h.AuthUseCase.SignIn(c.Request.Context(), user.UserName, user.Password)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		log.Debug().Str("package", "handlers").Str("func", "SignUp").Msg("exit with error")
+		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
+		c.Abort()
 		return
 	}
 
@@ -73,6 +78,7 @@ func (h *AuthHandler) SignIn(c *gin.Context) {
 
 	if strings.Compare(c.ContentType(), "application/json") != 0 {
 		c.String(http.StatusBadRequest, "неверный формат запроса")
+		c.Abort()
 		return
 	}
 
@@ -81,16 +87,19 @@ func (h *AuthHandler) SignIn(c *gin.Context) {
 
 	if err != nil || user.UserName == "" {
 		c.String(http.StatusBadRequest, "неверный формат запроса")
+		c.Abort()
 		return
 	}
 
 	token, err := h.AuthUseCase.SignIn(c.Request.Context(), user.UserName, user.Password)
 	if errors.Is(err, auth.ErrUserNotExsist) {
 		c.String(http.StatusUnauthorized, "неверная пара логин/пароль")
+		c.Abort()
 		return
 	}
 	if err != nil {
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
+		c.Abort()
 		return
 	}
 

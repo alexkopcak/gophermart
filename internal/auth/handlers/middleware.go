@@ -16,9 +16,9 @@ func AuthMiddlewareHandle(auc auth.UseCase) gin.HandlerFunc {
 		log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Str("token", token).Msg("get token value")
 
 		if token == "" || err != nil {
+			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("exit with error")
 			c.String(http.StatusUnauthorized, "пользователь не аутентифицирован")
 			c.Abort()
-			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("exit with error")
 			return
 		}
 
@@ -31,9 +31,9 @@ func AuthMiddlewareHandle(auc auth.UseCase) gin.HandlerFunc {
 		}
 
 		if err != nil || user.UserName == "" {
+			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("exit with error")
 			c.String(http.StatusUnauthorized, "пользователь не аутентифицирован")
 			c.Abort()
-			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("exit with error")
 			return
 		}
 		log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("exit")
