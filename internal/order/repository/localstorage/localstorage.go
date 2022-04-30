@@ -11,7 +11,7 @@ import (
 
 type OrderItem struct {
 	//	id      int32
-	UserId  string
+	UserID  string
 	Number  string
 	Debet   bool
 	Status  string
@@ -42,7 +42,7 @@ func (ols *OrderLocalStorage) InsertOrder(ctx context.Context, userID string, or
 	}
 
 	item := &OrderItem{
-		UserId:  userID,
+		UserID:  userID,
 		Number:  orderNumber,
 		Debet:   true,
 		Status:  models.OrderStatusNew,
@@ -56,9 +56,9 @@ func (ols *OrderLocalStorage) InsertOrder(ctx context.Context, userID string, or
 func (ols *OrderLocalStorage) GetOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error) {
 	result := make([]*models.Order, 0)
 	for _, item := range ols.order {
-		if item.UserId == userID {
+		if item.UserID == userID {
 			resultItem := &models.Order{
-				UserName: item.UserId,
+				UserName: item.UserID,
 				Number:   item.Number,
 				Status:   item.Status,
 				Accrual:  float32(item.Accrual) / 100,
@@ -73,7 +73,7 @@ func (ols *OrderLocalStorage) GetOrdersListByUserID(ctx context.Context, userID 
 func (ols *OrderLocalStorage) GetBalanceByUserID(ctx context.Context, userID string) (*models.Balance, error) {
 	var result = new(models.Balance)
 	for _, item := range ols.order {
-		if item.UserId == userID {
+		if item.UserID == userID {
 			if item.Debet {
 				result.Current = result.Current + float32(item.Accrual)
 			} else {
@@ -88,7 +88,7 @@ func (ols *OrderLocalStorage) GetOrderByOrderUID(ctx context.Context, orderNumbe
 	for _, item := range ols.order {
 		if item.Number == orderNumber && item.Debet {
 			return &models.Order{
-				UserName: item.UserId,
+				UserName: item.UserID,
 				Number:   item.Number,
 				Status:   item.Status,
 				Accrual:  float32(item.Accrual) / 100,
@@ -114,7 +114,7 @@ func (ols *OrderLocalStorage) WithdrawBalance(ctx context.Context, userID string
 	}
 
 	item := &OrderItem{
-		UserId:  userID,
+		UserID:  userID,
 		Number:  bw.OrderID,
 		Debet:   false,
 		Status:  models.OrderStatusWithDrawn,
@@ -130,7 +130,7 @@ func (ols *OrderLocalStorage) WithdrawBalance(ctx context.Context, userID string
 func (ols *OrderLocalStorage) Withdrawals(ctx context.Context, userID string) ([]*models.Withdrawals, error) {
 	result := make([]*models.Withdrawals, 0)
 	for _, item := range ols.order {
-		if item.UserId == userID && !item.Debet {
+		if item.UserID == userID && !item.Debet {
 			resultItem := &models.Withdrawals{
 				OrderID:     item.Number,
 				Sum:         float32(item.Accrual) / 100,

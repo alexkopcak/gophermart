@@ -46,7 +46,7 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 		return
 	}
 
-	userID, err := getUserId(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		c.Abort()
 		return
@@ -67,7 +67,7 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 	log.Debug().Str("package", "handlers").Str("func", "AddNewOrder").Msg("exit")
 }
 
-func getUserId(c *gin.Context) (string, error) {
+func getUserID(c *gin.Context) (string, error) {
 	user, exsists := c.Get(auth.CtxUserKey)
 	if !exsists {
 		c.String(http.StatusUnauthorized, "пользователь не аутентифицирован")
@@ -84,7 +84,7 @@ func getUserId(c *gin.Context) (string, error) {
 func (h *OrderHandler) GetUserOrders(c *gin.Context) {
 	log.Debug().Str("package", "handlers").Str("func", "GetUserOrders").Msg("start")
 
-	userID, err := getUserId(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		c.Abort()
 		return
@@ -109,7 +109,7 @@ func (h *OrderHandler) GetUserOrders(c *gin.Context) {
 func (h *OrderHandler) GetUserBalance(c *gin.Context) {
 	log.Debug().Str("package", "handlers").Str("func", "GetUserBalance").Msg("start")
 
-	userID, err := getUserId(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		c.Abort()
 		return
@@ -146,7 +146,7 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 		return
 	}
 
-	userID, err := getUserId(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		c.Abort()
 		return
@@ -164,7 +164,7 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 
 func (h *OrderHandler) Withdrawals(c *gin.Context) {
 	log.Debug().Str("package", "handlers").Str("func", "Withdrawals").Msg("start")
-	userID, err := getUserId(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		c.Abort()
 		return
