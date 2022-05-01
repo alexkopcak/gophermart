@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/alexkopcak/gophermart/internal/models"
 	"github.com/alexkopcak/gophermart/internal/order"
@@ -198,6 +199,7 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 			"ORDER BY uploaded_at ASC;", userID, models.OrderStatusNew, models.OrderStatusProcessing)
 
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil, err
 	}
 	defer rows.Close()

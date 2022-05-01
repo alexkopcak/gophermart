@@ -86,6 +86,7 @@ func (h *OrderHandler) GetUserOrders(c *gin.Context) {
 
 	userID, err := getUserID(c)
 	if err != nil {
+		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		c.Abort()
 		return
 	}

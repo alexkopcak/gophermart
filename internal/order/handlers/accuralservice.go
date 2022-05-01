@@ -22,7 +22,7 @@ func AccuralServiceHandler(ouc order.UseCase) gin.HandlerFunc {
 		orders, err := ouc.GetNotFinnalizedOrdersListByUserID(ctx.Request.Context(), userID)
 
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, "")
+			ctx.String(http.StatusInternalServerError, "GetNotFinnalizedOrdersListByUserID")
 			ctx.Abort()
 			return
 		}
