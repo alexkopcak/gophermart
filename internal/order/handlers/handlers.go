@@ -60,6 +60,7 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 		if errors.Is(err, order.ErrOrderAlreadyInsertedByUser) {
 			c.String(http.StatusOK, "номер заказа уже был загружен этим пользователем")
 		}
+		c.String(http.StatusInternalServerError, err.Error())
 		c.Abort()
 		return
 	}

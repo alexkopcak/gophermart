@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/alexkopcak/gophermart/internal/models"
 	"github.com/alexkopcak/gophermart/internal/order"
@@ -30,17 +31,24 @@ func NewOrderPostgresStorage(dbURI string) order.OrderRepository {
 
 func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNumber string) (*models.Order, error) {
 	var result = new(models.Order)
+	var accrual int32
+	var timeValue time.Time
+
 	err := ops.db.QueryRow(ctx,
 		"SELECT user_id, order_id, order_status, accrual, uploaded_at "+
 			"FROM orders "+
-			"WHERE (debet IS $1) AND (order_id = $2);",
-		true, orderNumber).
-		Scan(&result.UserName, &result.Number, &result.Status, &result.Accrual, &result.Uploaded)
-	if err == pgx.ErrNoRows {
+			"WHERE (debet IS TRUE) AND (order_id = $1);", orderNumber).
+		Scan(&result.UserName, &result.Number, &result.Status, &accrual, &timeValue)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 
-	result.Accrual = result.Accrual / 100
+	result.Accrual = float32(accrual) / 100
+	result.Uploaded = timeValue.Format(time.RFC3339)
 	return result, nil
 
 }
@@ -61,8 +69,8 @@ func (ops *OrderPostgresStorage) InsertOrder(ctx context.Context, userID string,
 	_, err = ops.db.Exec(ctx,
 		"INSERT INTO orders "+
 			"(user_id, order_id, debet, order_status, accrual) "+
-			"VALUES ($1, $2, $3, $4, $5);",
-		userID, orderNumber, true, models.OrderStatusNew, 0)
+			"VALUES ($1, $2, TRUE, $3, $4);",
+		userID, orderNumber, models.OrderStatusNew, 0)
 
 	return err
 }
@@ -75,16 +83,21 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 			"FROM orders "+
 			"WHERE (debet IS TRUE) AND (user_id = $1) "+
 			"ORDER BY uploaded_at ASC;", userID)
-	//	defer rows.Close()
 
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var item models.Order
-		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &item.Accrual, &item.Uploaded)
+		var timeValue time.Time
+		var accrual int32
+		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &accrual, &timeValue)
+		item.Accrual = float32(accrual) / 100
+		item.Uploaded = timeValue.Format(time.RFC3339)
 		if err != nil {
+			fmt.Println(err.Error())
 			return nil, nil
 		}
 		result = append(result, &item)
@@ -114,9 +127,11 @@ func (ops *OrderPostgresStorage) GetBalanceByUserID(ctx context.Context, userID 
 		return nil, err
 	}
 
+	withdrawn = -1 * withdrawn
+
 	return &models.Balance{
 		Current:   float32(accrual) / 100,
-		Withdrawn: -1 * float32(withdrawn) / 100,
+		Withdrawn: float32(withdrawn) / 100,
 	}, nil
 }
 
@@ -199,7 +214,6 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 			"ORDER BY uploaded_at ASC;", userID, models.OrderStatusNew, models.OrderStatusProcessing)
 
 	if err != nil {
-		fmt.Println(err.Error())
 		return nil, err
 	}
 	defer rows.Close()
