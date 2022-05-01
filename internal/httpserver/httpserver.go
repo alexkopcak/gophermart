@@ -19,11 +19,6 @@ func NewGinEngine(auc auth.UseCase, ouc order.UseCase) *gin.Engine {
 	authhandlers.RegisterHTTPEndpoints(router, auc)
 
 	orderhandlers.RegisterHTTPEndpoints(router, authhandlers.AuthMiddlewareHandle(auc), ouc)
-	// authHander := NewAuthHandler(auc)
-	// router.POST("/api/user/register", authHander.SignUp)
-	// router.POST("/api/user/login", authHander.SignIn)
-
-	// router.Use(AuthMiddlewareHandle(auc)).GET("/api/user/orders", authHander.Test)
 
 	return router
 }

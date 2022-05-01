@@ -5,12 +5,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterHTTPEndpoints(router *gin.Engine, midlleware gin.HandlerFunc, auc order.UseCase) {
-	handler := NewOrderHandler(auc)
+func RegisterHTTPEndpoints(router *gin.Engine, midlleware gin.HandlerFunc, ouc order.UseCase) {
+	handler := NewOrderHandler(ouc)
 
-	router.Use(midlleware).POST("/api/user/orders", handler.AddNewOrder)
-	router.Use(midlleware).GET("/api/user/orders", handler.GetUserOrders)
-	router.Use(midlleware).GET("/api/user/balance", handler.GetUserBalance)
-	router.Use(midlleware).POST("/api/user/balance/withdraw", handler.BalanceWithdraw)
-	router.Use(midlleware).GET("/api/user/withdrawals", handler.Withdrawals)
+	routes := router.Use(midlleware).Use(AccuralServiceHandler(ouc))
+
+	routes.POST("/api/user/orders", handler.AddNewOrder)
+	routes.GET("/api/user/orders", handler.GetUserOrders)
+	routes.GET("/api/user/balance", handler.GetUserBalance)
+	routes.POST("/api/user/balance/withdraw", handler.BalanceWithdraw)
+	routes.GET("/api/user/withdrawals", handler.Withdrawals)
 }

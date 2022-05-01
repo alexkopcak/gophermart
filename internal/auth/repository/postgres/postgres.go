@@ -18,7 +18,7 @@ type PostgresStorage struct {
 }
 
 func NewPostgresStorage(dbURI string) auth.UserRepository {
-	log.Debug().Msg("New postgres storage")
+	log.Debug().Msg("new postgres storage")
 	MakeMigrations(dbURI)
 
 	log.Debug().Msg("pgx connect")

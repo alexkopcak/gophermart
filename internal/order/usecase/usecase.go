@@ -34,5 +34,13 @@ func (ouc *OrderUseCase) BalanceWithdraw(ctx context.Context, userID string, bw 
 }
 
 func (ouc *OrderUseCase) Withdrawals(ctx context.Context, userID string) ([]*models.Withdrawals, error) {
-	return nil, nil
+	return ouc.orderRepo.Withdrawals(ctx, userID)
+}
+
+func (ouc *OrderUseCase) UpdateOrder(ctx context.Context, order *models.Order) error {
+	return ouc.orderRepo.UpdateOrder(ctx, order)
+}
+
+func (ouc *OrderUseCase) GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error) {
+	return ouc.orderRepo.GetNotFinnalizedOrdersListByUserID(ctx, userID)
 }

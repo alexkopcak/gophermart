@@ -14,4 +14,6 @@ type UseCase interface {
 	GetBalance(ctx context.Context, userID string) (*models.Balance, error)
 	BalanceWithdraw(ctx context.Context, userID string, bw *models.BalanceWithdraw) error
 	Withdrawals(ctx context.Context, userID string) ([]*models.Withdrawals, error)
+	UpdateOrder(ctx context.Context, order *models.Order) error
+	GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error)
 }

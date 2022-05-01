@@ -23,7 +23,7 @@ func MakeMigrations(dbURI string) {
 
 	log.Debug().Msg("set instance")
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://internal/auth/repository/postgres/migrations",
+		"file://internal/order/repository/postgres/migrations",
 		"postgres",
 		driver)
 	log.Fatal().Err(err)

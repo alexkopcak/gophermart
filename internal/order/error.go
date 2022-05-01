@@ -12,4 +12,5 @@ var (
 	ErrInternalServer                  = errors.New("внутренняя ошибка сервера")
 
 	ErrNotEnougthBalance = errors.New("на счету недостаточно средств")
+	ErrOrderBadNumber    = errors.New("неверный номер заказа")
 )

@@ -2,10 +2,11 @@ package app
 
 import (
 	"github.com/alexkopcak/gophermart/internal/auth"
-	authlocalstorage "github.com/alexkopcak/gophermart/internal/auth/repository/localstorage"
+	authdb "github.com/alexkopcak/gophermart/internal/auth/repository/postgres"
 	authusecase "github.com/alexkopcak/gophermart/internal/auth/usecase"
 	"github.com/alexkopcak/gophermart/internal/order"
-	orderlocalstorage "github.com/alexkopcak/gophermart/internal/order/repository/localstorage"
+
+	orderdb "github.com/alexkopcak/gophermart/internal/order/repository/postgres"
 	orderusecase "github.com/alexkopcak/gophermart/internal/order/usecase"
 	"github.com/gin-gonic/gin"
 
@@ -23,10 +24,11 @@ type App struct {
 }
 
 func NewApp(cfg *config.Config) *App {
-	userRepo := authlocalstorage.NewUserLocalStorage()
-	//userRepo := db.NewPostgresStorage(cfg.DataBaseURI)
+	//userRepo := authlocalstorage.NewUserLocalStorage()
+	userRepo := authdb.NewPostgresStorage(cfg.DataBaseURI)
 
-	orderRepo := orderlocalstorage.NewOrderLocalStorage()
+	//orderRepo := orderlocalstorage.NewOrderLocalStorage()
+	orderRepo := orderdb.NewOrderPostgresStorage(cfg.DataBaseURI)
 
 	return &App{
 		config: cfg,

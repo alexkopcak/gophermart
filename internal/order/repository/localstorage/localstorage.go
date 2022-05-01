@@ -30,7 +30,7 @@ func NewOrderLocalStorage() order.OrderRepository {
 }
 
 func (ols *OrderLocalStorage) InsertOrder(ctx context.Context, userID string, orderNumber string) error {
-	orderItem, _ := ols.GetOrderByOrderUID(ctx, orderNumber)
+	orderItem, _ := ols.GetOrderByOrderUID(ctx, userID, orderNumber)
 	fmt.Printf("%v\n", orderItem)
 	if orderItem != nil {
 		if orderItem.UserName == userID {
@@ -84,9 +84,9 @@ func (ols *OrderLocalStorage) GetBalanceByUserID(ctx context.Context, userID str
 	return result, nil
 }
 
-func (ols *OrderLocalStorage) GetOrderByOrderUID(ctx context.Context, orderNumber string) (*models.Order, error) {
+func (ols *OrderLocalStorage) GetOrderByOrderUID(ctx context.Context, userID string, orderNumber string) (*models.Order, error) {
 	for _, item := range ols.order {
-		if item.Number == orderNumber && item.Debet {
+		if item.Number == orderNumber && item.Debet && item.UserID == userID {
 			return &models.Order{
 				UserName: item.UserID,
 				Number:   item.Number,
@@ -140,4 +140,34 @@ func (ols *OrderLocalStorage) Withdrawals(ctx context.Context, userID string) ([
 		}
 	}
 	return result, nil
+}
+
+func (ols *OrderLocalStorage) UpdateOrder(ctx context.Context, order *models.Order) error {
+	for _, item := range ols.order {
+		if item.Number == order.Number && item.Debet {
+			item.Status = order.Status
+			item.Accrual = int32(order.Accrual * 100)
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func (ols *OrderLocalStorage) GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error) {
+	result := make([]*models.Order, 0)
+	for _, item := range ols.order {
+		if item.UserID == userID && (item.Status == models.OrderStatusNew || item.Status == models.OrderStatusProcessing) {
+			resultItem := &models.Order{
+				UserName: item.UserID,
+				Number:   item.Number,
+				Status:   item.Status,
+				Accrual:  float32(item.Accrual) / 100,
+				Uploaded: item.Date.Format(time.RFC3339),
+			}
+			result = append(result, resultItem)
+		}
+	}
+	return result, nil
+
 }

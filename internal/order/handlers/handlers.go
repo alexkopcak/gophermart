@@ -153,6 +153,12 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 	}
 	err = h.OrderUseCase.BalanceWithdraw(c.Request.Context(), userID, &balWithdraw)
 
+	if errors.Is(err, order.ErrOrderBadNumber) {
+		c.String(http.StatusUnprocessableEntity, "неверный номер заказа")
+		c.Abort()
+		return
+	}
+
 	if err != nil {
 		c.Abort()
 		return
