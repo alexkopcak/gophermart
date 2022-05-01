@@ -32,7 +32,6 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 	if strings.Compare(c.ContentType(), "text/plain") != 0 {
 		log.Debug().Str("package", "handlers").Str("func", "AddNewOrder").Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
 		c.String(http.StatusBadRequest, "неверный формат запроса")
-		c.Abort()
 		return
 	}
 
@@ -42,7 +41,6 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 	if err != nil || orderID == "" {
 		log.Debug().Str("package", "handlers").Str("func", "AddNewOrder").Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
 		c.String(http.StatusUnprocessableEntity, "неверный формат номера заказа")
-		c.Abort()
 		return
 	}
 
@@ -55,7 +53,6 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 
 	userID, err := getUserID(c)
 	if err != nil {
-		c.Abort()
 		return
 	}
 
@@ -68,7 +65,6 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 			c.String(http.StatusOK, "номер заказа уже был загружен этим пользователем")
 		}
 		c.String(http.StatusInternalServerError, err.Error())
-		c.Abort()
 		return
 	}
 	c.String(http.StatusAccepted, "новый номер заказа принят в обработку")
@@ -95,19 +91,16 @@ func (h *OrderHandler) GetUserOrders(c *gin.Context) {
 	userID, err := getUserID(c)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
-		c.Abort()
 		return
 	}
 
 	orders, err := h.OrderUseCase.GetOrders(c.Request.Context(), userID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
-		c.Abort()
 		return
 	}
 	if len(orders) == 0 {
 		c.String(http.StatusNoContent, "нет данных для ответа")
-		c.Abort()
 		return
 	}
 	c.JSON(http.StatusOK, orders)
@@ -120,7 +113,6 @@ func (h *OrderHandler) GetUserBalance(c *gin.Context) {
 
 	userID, err := getUserID(c)
 	if err != nil {
-		c.Abort()
 		return
 	}
 
@@ -140,7 +132,6 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 	if strings.Compare(c.ContentType(), "application/json") != 0 {
 		log.Debug().Str("package", "handlers").Str("func", "BalanceWithdraw").Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
 		c.String(http.StatusBadRequest, "неверный формат запроса")
-		c.Abort()
 		return
 	}
 
@@ -150,7 +141,6 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 	if err != nil || balWithdraw.OrderID == "" {
 		log.Debug().Str("package", "handlers").Str("func", "BalanceWithdraw").Str("OrderID", balWithdraw.OrderID).Msg("start")
 		c.String(http.StatusUnprocessableEntity, "неверный номер заказа")
-		c.Abort()
 		return
 	}
 
@@ -163,19 +153,17 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 
 	userID, err := getUserID(c)
 	if err != nil {
-		c.Abort()
 		return
 	}
 	err = h.OrderUseCase.BalanceWithdraw(c.Request.Context(), userID, &balWithdraw)
 
 	if errors.Is(err, order.ErrOrderBadNumber) {
 		c.String(http.StatusUnprocessableEntity, "неверный номер заказа")
-		c.Abort()
 		return
 	}
 
 	if err != nil {
-		c.Abort()
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -187,7 +175,6 @@ func (h *OrderHandler) Withdrawals(c *gin.Context) {
 	log.Debug().Str("package", "handlers").Str("func", "Withdrawals").Msg("start")
 	userID, err := getUserID(c)
 	if err != nil {
-		c.Abort()
 		return
 	}
 
