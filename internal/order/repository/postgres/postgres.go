@@ -220,10 +220,14 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 
 	for rows.Next() {
 		var item models.Order
-		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &item.Accrual, &item.Uploaded)
+		var accrual int32
+		var uploaded time.Time
+		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &accrual, &uploaded)
 		if err != nil {
 			return nil, nil
 		}
+		item.Accrual = float32(accrual) / 100
+		item.Uploaded = uploaded.Format(time.RFC3339)
 		result = append(result, &item)
 	}
 

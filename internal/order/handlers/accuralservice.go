@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/alexkopcak/gophermart/internal/order"
@@ -15,15 +16,15 @@ func AccuralServiceHandler(ouc order.UseCase) gin.HandlerFunc {
 		userID, err := getUserID(ctx)
 
 		if err != nil {
-			ctx.Abort()
 			return
 		}
 
 		orders, err := ouc.GetNotFinnalizedOrdersListByUserID(ctx.Request.Context(), userID)
 
+		fmt.Printf("!!!\n%v\n!!!", orders)
+
 		if err != nil {
 			ctx.String(http.StatusInternalServerError, "GetNotFinnalizedOrdersListByUserID")
-			ctx.Abort()
 			return
 		}
 
