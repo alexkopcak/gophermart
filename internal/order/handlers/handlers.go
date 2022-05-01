@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/alexkopcak/gophermart/internal/auth"
@@ -12,6 +13,7 @@ import (
 	"github.com/alexkopcak/gophermart/internal/order"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"github.com/theplant/luhn"
 )
 
 type OrderHandler struct {
@@ -37,12 +39,17 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 	buff, err := ioutil.ReadAll(c.Request.Body)
 	var orderID = string(buff)
 
-	//todo: сделать проверку по методу Luna
-
 	if err != nil || orderID == "" {
 		log.Debug().Str("package", "handlers").Str("func", "AddNewOrder").Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
 		c.String(http.StatusUnprocessableEntity, "неверный формат номера заказа")
 		c.Abort()
+		return
+	}
+
+	id, err := strconv.Atoi(orderID)
+
+	if err != nil || !luhn.Valid(id) {
+		c.String(http.StatusUnprocessableEntity, "неверный формат номера заказа")
 		return
 	}
 
@@ -140,11 +147,17 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 	var balWithdraw models.BalanceWithdraw
 	err := json.NewDecoder(c.Request.Body).Decode(&balWithdraw)
 
-	// todo: проверка номера заказа
 	if err != nil || balWithdraw.OrderID == "" {
 		log.Debug().Str("package", "handlers").Str("func", "BalanceWithdraw").Str("OrderID", balWithdraw.OrderID).Msg("start")
 		c.String(http.StatusUnprocessableEntity, "неверный номер заказа")
 		c.Abort()
+		return
+	}
+
+	id, err := strconv.Atoi(balWithdraw.OrderID)
+
+	if err != nil || !luhn.Valid(id) {
+		c.String(http.StatusUnprocessableEntity, "неверный формат номера заказа")
 		return
 	}
 
