@@ -201,7 +201,7 @@ func (ops *OrderPostgresStorage) UpdateOrder(ctx context.Context, orderNumber st
 	_, err := ops.db.Exec(ctx,
 		"UPDATE orders "+
 			"SET order_status = $1 , accrual = $2 "+
-			"WHERE (order_id = $3) AND (debet IS TRUE) ;", orderStatus, orderAccrual, orderNumber)
+			"WHERE (order_id = $3) ;", orderStatus, orderAccrual, orderNumber)
 	return err
 }
 
