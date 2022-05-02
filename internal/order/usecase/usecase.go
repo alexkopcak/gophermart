@@ -44,3 +44,7 @@ func (ouc *OrderUseCase) UpdateOrder(ctx context.Context, orderNumber string, or
 func (ouc *OrderUseCase) GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error) {
 	return ouc.orderRepo.GetNotFinnalizedOrdersListByUserID(ctx, userID)
 }
+
+func (ouc *OrderUseCase) GetNotFinnalizedOrdersList(ctx context.Context) ([]*models.Order, error) {
+	return ouc.orderRepo.GetNotFinnalizedOrdersList(ctx)
+}

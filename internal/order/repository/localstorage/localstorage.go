@@ -171,3 +171,21 @@ func (ols *OrderLocalStorage) GetNotFinnalizedOrdersListByUserID(ctx context.Con
 	return result, nil
 
 }
+
+func (ols *OrderLocalStorage) GetNotFinnalizedOrdersList(ctx context.Context) ([]*models.Order, error) {
+	result := make([]*models.Order, 0)
+	for _, item := range ols.order {
+		if item.Status == models.OrderStatusNew || item.Status == models.OrderStatusProcessing {
+			resultItem := &models.Order{
+				UserName: item.UserID,
+				Number:   item.Number,
+				Status:   item.Status,
+				Accrual:  float32(item.Accrual) / 100,
+				Uploaded: item.Date.Format(time.RFC3339),
+			}
+			result = append(result, resultItem)
+		}
+	}
+	return result, nil
+
+}

@@ -14,4 +14,5 @@ type OrderRepository interface {
 	Withdrawals(ctx context.Context, userID string) ([]*models.Withdrawals, error)
 	UpdateOrder(ctx context.Context, orderNumber string, orderStatus string, orderAccrual int32) error
 	GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error)
+	GetNotFinnalizedOrdersList(ctx context.Context) ([]*models.Order, error)
 }

@@ -241,3 +241,34 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 
 	return result, nil
 }
+
+func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersList(ctx context.Context) ([]*models.Order, error) {
+	result := make([]*models.Order, 0)
+
+	rows, err := ops.db.Query(ctx,
+		"SELECT user_id, order_id, order_status, accrual, uploaded_at "+
+			"FROM orders "+
+			"WHERE (debet IS TRUE) AND order_status NOT IN ($1, $2)"+
+			"ORDER BY uploaded_at ASC;", models.OrderStatusProcessed, models.OrderStatusInvalid)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var item models.Order
+		var accrual int32
+		var uploaded pgtype.Timestamp
+		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &accrual, &uploaded)
+		if err != nil {
+			log.Debug().Err(err)
+			return nil, nil
+		}
+		item.Accrual = float32(accrual) / 100
+		item.Uploaded = uploaded.Time.Format(time.RFC3339)
+		result = append(result, &item)
+	}
+
+	return result, nil
+}
