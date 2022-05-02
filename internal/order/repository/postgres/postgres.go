@@ -162,8 +162,8 @@ func (ops *OrderPostgresStorage) WithdrawBalance(ctx context.Context, userID str
 	_, err = ops.db.Exec(ctx,
 		"INSERT INTO orders "+
 			"(user_id, order_id, debet, order_status, accrual) "+
-			"VALUES ($1, $2, $3, $4, $5);",
-		userID, bw.OrderID, false, models.OrderStatusWithDrawn, -100*bw.Sum)
+			"VALUES ($1, $2, FALSE, $3, $4);",
+		userID, bw.OrderID, models.OrderStatusWithDrawn, -100*bw.Sum)
 
 	return err
 
