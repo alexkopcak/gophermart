@@ -217,7 +217,7 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 	rows, err := ops.db.Query(ctx,
 		"SELECT user_id, order_id, order_status, accrual, uploaded_at "+
 			"FROM orders "+
-			"WHERE (user_id = $1) AND order_status NOT IN ($2, $3)"+
+			"WHERE (debet IS TRUE) AND (user_id = $1) AND order_status NOT IN ($2, $3)"+
 			"ORDER BY uploaded_at ASC;", userID, models.OrderStatusProcessed, models.OrderStatusInvalid)
 
 	if err != nil {
