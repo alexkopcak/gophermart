@@ -12,8 +12,8 @@ import (
 )
 
 type Order struct {
-	Number  string  `json:"number"`
-	Status  string  `json:"staus"`
+	Number  string  `json:"order"`
+	Status  string  `json:"status"`
 	Accrual float32 `json:"accrual"`
 }
 
