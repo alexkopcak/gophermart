@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/alexkopcak/gophermart/internal/order"
@@ -34,7 +35,8 @@ func AccuralServiceHandler(ouc order.UseCase, as *integration.AccurualService) g
 			for _, item := range orders {
 				log.Debug().Str("package", "handlers").Str("func", "AccuralServiceHandler").Str("order", item.Number).Msg("Update order")
 
-				as.UpdateData(ctx, item.Number)
+				err = as.UpdateData(context.Background(), item.Number)
+				log.Debug().Err(err)
 			}
 		}()
 
