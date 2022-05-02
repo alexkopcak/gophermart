@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/alexkopcak/gophermart/internal/order"
 	"github.com/rs/zerolog/log"
@@ -35,18 +37,28 @@ var (
 
 func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order, error) {
 	var result Order
-	response, err := http.Get(fmt.Sprintf("%s/api/orders/%s", as.AccrualSystemAddress, number))
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
+	var response *http.Response
+	var err error
+	for ok := true; ok; ok = (response.StatusCode == http.StatusOK) {
+		response, err := http.Get(fmt.Sprintf("%s/api/orders/%s", as.AccrualSystemAddress, number))
+		if err != nil {
+			return nil, err
+		}
+		defer response.Body.Close()
 
-	if response.StatusCode == http.StatusTooManyRequests {
-		return nil, ErrTooManyRequests
-	}
+		if response.StatusCode == http.StatusTooManyRequests {
+			timeSleepString := response.Header.Get("Retry-After")
+			timeSleep, err := strconv.Atoi(timeSleepString)
+			log.Debug().Err(err)
+			if err != nil {
+				return nil, nil
+			}
+			time.Sleep(time.Duration(timeSleep) * time.Second)
+		}
 
-	if response.StatusCode != http.StatusOK {
-		return nil, nil
+		if response.StatusCode != http.StatusOK {
+			return nil, nil
+		}
 	}
 
 	err = json.NewDecoder(response.Body).Decode(&result)
@@ -61,6 +73,7 @@ func (as *AccurualService) UpdateData(ctx context.Context, number string) error 
 	order, err := as.getOrder(ctx, number)
 	log.Debug().Err(err)
 	if errors.Is(err, ErrTooManyRequests) {
+
 		return err
 	}
 	if err != nil {
