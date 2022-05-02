@@ -85,6 +85,7 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 			"ORDER BY uploaded_at ASC;", userID)
 
 	if err != nil {
+		log.Debug().Err(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -97,8 +98,10 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 		item.Accrual = float32(accrual) / 100
 		item.Uploaded = timeValue.Format(time.RFC3339)
 		if err != nil {
+			fmt.Println("!!!\nerror\n!!!")
 			fmt.Println(err.Error())
-			return nil, nil
+			log.Debug().Err(err)
+			return nil, err
 		}
 		result = append(result, &item)
 	}
