@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/alexkopcak/gophermart/internal/models"
 	"github.com/alexkopcak/gophermart/internal/order"
 	"github.com/rs/zerolog/log"
 )
@@ -54,7 +55,7 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 			log.Debug().Str("Retry-After", timeSleepString).Msg("catch timeout")
 			log.Debug().Err(err)
 			if err != nil {
-				return nil, nil
+				continue
 			}
 			time.Sleep(time.Duration(timeSleep) * time.Second)
 			continue
@@ -65,7 +66,13 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 			if err != nil {
 				return nil, err
 			}
-			return &result, nil
+			if result.Status == models.OrderStatusProcessing {
+				as.OrderUseCase.UpdateOrder(ctx, result.Number, result.Status, 0)
+			}
+			if result.Status == models.OrderStatusProcessed ||
+				result.Status == models.OrderStatusInvalid {
+				return &result, nil
+			}
 		}
 	}
 }
@@ -73,9 +80,6 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 func (as *AccurualService) UpdateData(ctx context.Context, number string) error {
 	order, err := as.getOrder(ctx, number)
 	log.Debug().Err(err)
-	if errors.Is(err, ErrTooManyRequests) {
-		return err
-	}
 	if err != nil {
 		return err
 	}
