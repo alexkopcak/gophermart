@@ -12,7 +12,7 @@ type Config struct {
 	AccrualSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS" envDefault:"127.0.0.1:8081"`
 	HashSalt             string `env:"HASH_SALT" envDefault:"hash salt"`
 	SigningKey           string `env:"SIGNING_KEY" envDefault:"signing key"`
-	TokenTTL             int    `env:"TOKEN_TTL" envDefault:"60"`
+	TokenTTL             int    `env:"TOKEN_TTL" envDefault:"600"`
 }
 
 func Init() *Config {

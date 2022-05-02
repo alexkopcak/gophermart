@@ -185,11 +185,12 @@ func (ops *OrderPostgresStorage) Withdrawals(ctx context.Context, userID string)
 
 	for rows.Next() {
 		var item models.Withdrawals
-		err := rows.Scan(&item.OrderID, &item.Sum, &item.ProcessedAt)
+		var sum int32
+		err := rows.Scan(&item.OrderID, &sum, &item.ProcessedAt)
 		if err != nil {
 			return nil, nil
 		}
-		item.Sum = item.Sum / 100
+		item.Sum = float32(sum) / 100
 		result = append(result, &item)
 	}
 
