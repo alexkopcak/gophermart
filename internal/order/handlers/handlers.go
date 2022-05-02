@@ -102,7 +102,7 @@ func (h *OrderHandler) GetUserOrders(c *gin.Context) {
 		return
 	}
 	if len(orders) == 0 {
-		c.String(http.StatusNoContent, "нет данных для ответа")
+		c.JSON(http.StatusNoContent, orders)
 		return
 	}
 	c.JSON(http.StatusOK, orders)
