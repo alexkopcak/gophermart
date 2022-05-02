@@ -111,7 +111,7 @@ func (ops *OrderPostgresStorage) GetBalanceByUserID(ctx context.Context, userID 
 	err := ops.db.QueryRow(ctx,
 		"SELECT COALESCE(SUM(accrual), 0) "+
 			"FROM orders "+
-			"WHERE (debet IS TRUE) AND (user_id = $1);", userID).Scan(&accrual)
+			"WHERE (user_id = $1);", userID).Scan(&accrual)
 
 	if err != nil {
 		return nil, err
