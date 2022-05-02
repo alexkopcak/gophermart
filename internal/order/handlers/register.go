@@ -9,9 +9,10 @@ func RegisterHTTPEndpoints(router *gin.Engine, midlleware gin.HandlerFunc, ouc o
 	handler := NewOrderHandler(ouc, asAddress)
 
 	routes := router.Use(midlleware)
-	//.Use(AccuralServiceHandler(ouc, handler.AccurualService))
 
-	routes.POST("/api/user/orders", handler.AddNewOrder).Use(AccuralServiceBackgroundHandle(ouc, handler.AccurualService))
+	AccuralServiceBackground(ouc, handler.AccurualService)
+
+	routes.POST("/api/user/orders", handler.AddNewOrder)
 	routes.GET("/api/user/orders", handler.GetUserOrders)
 	routes.GET("/api/user/balance", handler.GetUserBalance)
 	routes.POST("/api/user/balance/withdraw", handler.BalanceWithdraw)
