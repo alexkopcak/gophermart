@@ -7,6 +7,7 @@ import (
 
 	"github.com/alexkopcak/gophermart/internal/models"
 	"github.com/alexkopcak/gophermart/internal/order"
+	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
 	"github.com/rs/zerolog/log"
 )
@@ -32,7 +33,7 @@ func NewOrderPostgresStorage(dbURI string) order.OrderRepository {
 func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNumber string) (*models.Order, error) {
 	var result = new(models.Order)
 	var accrual int32
-	var timeValue time.Time
+	var timeValue pgtype.Timestamp
 
 	err := ops.db.QueryRow(ctx,
 		"SELECT user_id, order_id, order_status, accrual, uploaded_at "+
@@ -48,7 +49,7 @@ func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNu
 	}
 
 	result.Accrual = float32(accrual) / 100
-	result.Uploaded = timeValue.Format(time.RFC3339)
+	result.Uploaded = timeValue.Time.Format(time.RFC3339)
 	return result, nil
 
 }
@@ -92,11 +93,11 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 
 	for rows.Next() {
 		var item models.Order
-		var timeValue time.Time
+		var timeValue pgtype.Timestamp
 		var accrual int32
 		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &accrual, &timeValue)
 		item.Accrual = float32(accrual) / 100
-		item.Uploaded = timeValue.Format(time.RFC3339)
+		item.Uploaded = timeValue.Time.Format(time.RFC3339)
 		if err != nil {
 			fmt.Println("!!!\nerror\n!!!")
 			fmt.Println(err.Error())
@@ -189,11 +190,13 @@ func (ops *OrderPostgresStorage) Withdrawals(ctx context.Context, userID string)
 	for rows.Next() {
 		var item models.Withdrawals
 		var sum int32
-		err := rows.Scan(&item.OrderID, &sum, &item.ProcessedAt)
+		var processedAt pgtype.Timestamp
+		err := rows.Scan(&item.OrderID, &sum, &processedAt)
 		if err != nil {
 			return nil, nil
 		}
 		item.Sum = float32(sum) / 100
+		item.ProcessedAt = processedAt.Time.Format(time.RFC3339)
 		result = append(result, &item)
 	}
 
@@ -225,14 +228,14 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 	for rows.Next() {
 		var item models.Order
 		var accrual int32
-		var uploaded time.Time
+		var uploaded pgtype.Timestamp
 		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &accrual, &uploaded)
 		if err != nil {
 			log.Debug().Err(err)
 			return nil, nil
 		}
 		item.Accrual = float32(accrual) / 100
-		item.Uploaded = uploaded.Format(time.RFC3339)
+		item.Uploaded = uploaded.Time.Format(time.RFC3339)
 		result = append(result, &item)
 	}
 
