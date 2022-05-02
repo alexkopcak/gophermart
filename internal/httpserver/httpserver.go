@@ -12,6 +12,8 @@ import (
 
 func NewGinEngine(auc auth.UseCase, ouc order.UseCase, asaddress string) *gin.Engine {
 	router := gin.Default()
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
 
 	router.Use(gzipMiddlewareHandle)
 	router.Use(gzip.Gzip(gzip.BestSpeed, gzip.WithDecompressFn(gzip.DefaultDecompressHandle)))
