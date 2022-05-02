@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3'
 
 services:
   postgres:
@@ -11,6 +11,7 @@ services:
     ports:
       - "5432:5432"
 
+
   pgadmin:
     container_name: pgadmin_container
     image: dpage/pgadmin4:5.7
@@ -20,3 +21,8 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "5050:80"
+
+networks:
+  gophermart_net:
+    name: gophermart_net
+    driver: bridge
