@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/alexkopcak/gophermart/internal/order"
+	"github.com/rs/zerolog/log"
 )
 
 type Order struct {
@@ -45,7 +46,7 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, nil
+		return &result, nil
 	}
 
 	err = json.NewDecoder(response.Body).Decode(&result)
@@ -58,6 +59,7 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 
 func (as *AccurualService) UpdateData(ctx context.Context, number string) error {
 	order, err := as.getOrder(ctx, number)
+	log.Debug().Err(err)
 	if errors.Is(err, ErrTooManyRequests) {
 		return err
 	}
@@ -65,9 +67,11 @@ func (as *AccurualService) UpdateData(ctx context.Context, number string) error 
 		return err
 	}
 
+	log.Debug().Str("order number", order.Number).
+		Str("order status", order.Status).
+		Float32("order accural", order.Accrual).
+		Msg("Get from accural data")
+
 	err = as.OrderUseCase.UpdateOrder(ctx, order.Number, order.Status, int32(order.Accrual*100))
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
