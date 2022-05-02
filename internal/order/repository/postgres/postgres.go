@@ -17,7 +17,7 @@ type OrderPostgresStorage struct {
 
 func NewOrderPostgresStorage(dbURI string) order.OrderRepository {
 	log.Debug().Msg("new order postgres storage")
-	MakeMigrations(dbURI)
+	//MakeMigrations(dbURI)
 
 	log.Debug().Msg("pgx connect")
 	conn, err := pgx.Connect(context.Background(), dbURI)
