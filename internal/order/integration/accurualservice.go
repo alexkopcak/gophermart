@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -40,6 +41,7 @@ func (as *AccurualService) getOrder(number string) (*Order, error) {
 	for {
 		response, err := http.Get(fmt.Sprintf("%s/api/orders/%s", as.AccrualSystemAddress, number))
 		if err != nil {
+			log.Info().Err(err)
 			continue
 		}
 		defer response.Body.Close()
@@ -67,7 +69,7 @@ func (as *AccurualService) getOrder(number string) (*Order, error) {
 			}
 			log.Info().Str("Number", result.Number).Str("Status", result.Status).Float32("Accurual", result.Accrual).Msg("получено")
 			if result.Status == models.OrderStatusProcessing {
-				as.OrderUseCase.UpdateOrder(result.Number, result.Status, 0)
+				as.OrderUseCase.UpdateOrder(context.Background(), result.Number, result.Status, 0)
 			}
 			if result.Status == models.OrderStatusProcessed ||
 				result.Status == models.OrderStatusInvalid {
@@ -83,6 +85,6 @@ func (as *AccurualService) UpdateData(number string) error {
 	if err != nil {
 		return err
 	}
-	err = as.OrderUseCase.UpdateOrder(order.Number, order.Status, int32(order.Accrual*100))
+	err = as.OrderUseCase.UpdateOrder(context.Background(), order.Number, order.Status, int32(order.Accrual*100))
 	return err
 }

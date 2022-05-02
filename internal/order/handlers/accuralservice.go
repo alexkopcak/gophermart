@@ -20,7 +20,7 @@ func AccuralServiceBackground(ouc order.UseCase, as *integration.AccurualService
 				if item.Number == "" {
 					continue
 				}
-				err = as.UpdateData(context.Background(), item.Number)
+				err = as.UpdateData(item.Number)
 				log.Debug().Err(err)
 			}
 			time.Sleep(time.Millisecond * 100)
