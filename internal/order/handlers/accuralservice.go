@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"time"
 
 	"github.com/alexkopcak/gophermart/internal/order"
 	"github.com/alexkopcak/gophermart/internal/order/integration"
@@ -17,10 +16,13 @@ func AccuralServiceBackground(ouc order.UseCase, as *integration.AccurualService
 			for _, item := range orders {
 				log.Debug().Str("package", "handlers").Str("func", "AccuralServiceHandler").Str("order", item.Number).Msg("Update order")
 
+				if item.Number == "" {
+					continue
+				}
 				err = as.UpdateData(context.Background(), item.Number)
 				log.Debug().Err(err)
 			}
-			time.Sleep(time.Millisecond * 10)
+			//time.Sleep(time.Millisecond * 100)
 		}
 	}()
 }
