@@ -41,7 +41,7 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusTooManyRequests {
+	if response.StatusCode == http.StatusTooManyRequests {
 		return nil, ErrTooManyRequests
 	}
 
@@ -60,7 +60,6 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 func (as *AccurualService) UpdateData(ctx context.Context, number string) error {
 	order, err := as.getOrder(ctx, number)
 	log.Debug().Err(err)
-	fmt.Println("!!!\nОшибка при обновлении данных\n!!!")
 	if errors.Is(err, ErrTooManyRequests) {
 		return err
 	}
