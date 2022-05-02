@@ -26,3 +26,4 @@ networks:
   gophermart_net:
     name: gophermart_net
     driver: bridge
+    external: true
