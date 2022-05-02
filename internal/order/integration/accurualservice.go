@@ -66,6 +66,7 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 			if err != nil {
 				return nil, err
 			}
+			log.Info().Str("Number", result.Number).Str("Status", result.Status).Float32("Accurual", result.Accrual).Msg("получено")
 			if result.Status == models.OrderStatusProcessing {
 				as.OrderUseCase.UpdateOrder(ctx, result.Number, result.Status, 0)
 			}

@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	debug := true
+	debug := false
 
 	log.Info().Msg("start program")
 
