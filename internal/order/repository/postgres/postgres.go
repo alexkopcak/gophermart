@@ -201,10 +201,12 @@ func (ops *OrderPostgresStorage) Withdrawals(ctx context.Context, userID string)
 }
 
 func (ops *OrderPostgresStorage) UpdateOrder(ctx context.Context, orderNumber string, orderStatus string, orderAccrual int32) error {
+	log.Info().Str("orderStatus", orderStatus).Str("orderNumber", orderNumber).Int32("orderAccurual", orderAccrual).Msg("перед запросом")
 	_, err := ops.db.Exec(ctx,
 		"UPDATE orders "+
 			"SET order_status = $1 , accrual = $2 "+
 			"WHERE order_id = $3 ;", orderStatus, orderAccrual, orderNumber)
+	log.Info().Err(err)
 	return err
 }
 
