@@ -5,12 +5,14 @@ import (
 
 	"github.com/alexkopcak/gophermart/internal/order"
 	"github.com/alexkopcak/gophermart/internal/order/integration"
+	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 )
 
-func AccuralServiceBackground(ouc order.UseCase, as *integration.AccurualService) {
-	go func() {
-		for {
+func AccuralServiceBackgroundHandle(ouc order.UseCase, as *integration.AccurualService) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		go func() {
+			//		for {
 			orders, err := ouc.GetNotFinnalizedOrdersList(context.Background())
 			log.Debug().Err(err)
 			for _, item := range orders {
@@ -23,8 +25,9 @@ func AccuralServiceBackground(ouc order.UseCase, as *integration.AccurualService
 				log.Debug().Err(err)
 			}
 			//time.Sleep(time.Millisecond * 100)
-		}
-	}()
+			//		}
+		}()
+	}
 }
 
 // func AccuralServiceHandler(ouc order.UseCase, as *integration.AccurualService) gin.HandlerFunc {
