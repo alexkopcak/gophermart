@@ -39,7 +39,7 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 	if err != nil {
 		return nil, err
 	}
-	//defer response.Body.Close()
+	defer response.Body.Close()
 
 	if response.StatusCode == http.StatusTooManyRequests {
 		return nil, ErrTooManyRequests
