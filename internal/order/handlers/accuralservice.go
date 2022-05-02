@@ -16,15 +16,19 @@ func AccuralServiceHandler(ouc order.UseCase) gin.HandlerFunc {
 		userID, err := getUserID(ctx)
 
 		if err != nil {
+			ctx.String(http.StatusInternalServerError, "getUserID error")
+			ctx.Abort()
 			return
 		}
 
+		log.Debug().Str("package", "handlers").Str("func", "AccuralServiceHandler").Str("userID", userID).Msg("Get userID")
 		orders, err := ouc.GetNotFinnalizedOrdersListByUserID(ctx.Request.Context(), userID)
 
-		fmt.Printf("!!!\n%v\n!!!", orders)
+		fmt.Printf("!!!\n%v\n!!!", &orders)
 
 		if err != nil {
 			ctx.String(http.StatusInternalServerError, "GetNotFinnalizedOrdersListByUserID")
+			ctx.Abort()
 			return
 		}
 
