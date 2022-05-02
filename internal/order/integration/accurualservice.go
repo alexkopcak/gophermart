@@ -39,8 +39,10 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 	var result Order
 	var response *http.Response
 	var err error
-	for ok := true; ok; ok = (response.StatusCode == http.StatusOK) {
+	var statusCode int
+	for ok := true; ok; ok = (statusCode == http.StatusOK) {
 		response, err := http.Get(fmt.Sprintf("%s/api/orders/%s", as.AccrualSystemAddress, number))
+		statusCode = response.StatusCode
 		if err != nil {
 			return nil, err
 		}
