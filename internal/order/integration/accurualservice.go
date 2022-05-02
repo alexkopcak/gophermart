@@ -40,7 +40,7 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 	for {
 		response, err := http.Get(fmt.Sprintf("%s/api/orders/%s", as.AccrualSystemAddress, number))
 		if err != nil {
-			return nil, err
+			continue
 		}
 		defer response.Body.Close()
 
@@ -51,6 +51,7 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 		if response.StatusCode == http.StatusTooManyRequests {
 			timeSleepString := response.Header.Get("Retry-After")
 			timeSleep, err := strconv.Atoi(timeSleepString)
+			log.Debug().Str("Retry-After", timeSleepString).Msg("catch timeout")
 			log.Debug().Err(err)
 			if err != nil {
 				return nil, nil
