@@ -43,7 +43,7 @@ func NewApp(cfg *config.Config) *App {
 func (app *App) Run() error {
 	log.Debug().Str("package", "app").Str("func", "run").Msg("start")
 
-	app.server = httpserver.NewGinEngine(app.authUC, app.orderUC)
+	app.server = httpserver.NewGinEngine(app.authUC, app.orderUC, app.config.AccrualSystemAddress)
 
 	log.Fatal().Err(app.server.Run(app.config.RunAddress))
 

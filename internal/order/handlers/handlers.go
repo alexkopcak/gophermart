@@ -11,18 +11,23 @@ import (
 	"github.com/alexkopcak/gophermart/internal/auth"
 	"github.com/alexkopcak/gophermart/internal/models"
 	"github.com/alexkopcak/gophermart/internal/order"
+	"github.com/alexkopcak/gophermart/internal/order/integration"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"github.com/theplant/luhn"
 )
 
 type OrderHandler struct {
-	OrderUseCase order.UseCase
+	OrderUseCase    order.UseCase
+	AccurualService *integration.AccurualService
 }
 
-func NewOrderHandler(ouc order.UseCase) *OrderHandler {
+func NewOrderHandler(ouc order.UseCase, accrualServiceAddress string) *OrderHandler {
+	accrualService := integration.NewAccurualService(accrualServiceAddress, ouc)
+
 	return &OrderHandler{
-		OrderUseCase: ouc,
+		OrderUseCase:    ouc,
+		AccurualService: accrualService,
 	}
 }
 
@@ -115,6 +120,7 @@ func (h *OrderHandler) GetUserBalance(c *gin.Context) {
 
 	userID, err := getUserID(c)
 	if err != nil {
+		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		return
 	}
 

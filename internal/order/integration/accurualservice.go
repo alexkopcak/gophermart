@@ -19,13 +19,13 @@ type Order struct {
 
 type AccurualService struct {
 	AccrualSystemAddress string
-	OrderRepository      order.OrderRepository
+	OrderUseCase         order.UseCase
 }
 
-func NewAccurualService(address string, repo order.OrderRepository) *AccurualService {
+func NewAccurualService(address string, usecase order.UseCase) *AccurualService {
 	return &AccurualService{
 		AccrualSystemAddress: address,
-		OrderRepository:      repo,
+		OrderUseCase:         usecase,
 	}
 }
 
@@ -33,7 +33,7 @@ var (
 	ErrTooManyRequests = errors.New("превышено количество запросов к сервису")
 )
 
-func (as *AccurualService) getOrder(number string) (*Order, error) {
+func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order, error) {
 	var result Order
 	response, err := http.Get(fmt.Sprintf("%s/api/orders/%s", as.AccrualSystemAddress, number))
 
@@ -58,8 +58,8 @@ func (as *AccurualService) getOrder(number string) (*Order, error) {
 	return &result, nil
 }
 
-func (as *AccurualService) UpdateData(number string) error {
-	order, err := as.getOrder(number)
+func (as *AccurualService) UpdateData(ctx context.Context, number string) error {
+	order, err := as.getOrder(ctx, number)
 	if errors.Is(err, ErrTooManyRequests) {
 		return err
 	}
@@ -73,7 +73,7 @@ func (as *AccurualService) UpdateData(number string) error {
 		Accrual: order.Accrual,
 	}
 
-	err = as.OrderRepository.UpdateOrder(context.Background(), &item)
+	err = as.OrderUseCase.UpdateOrder(ctx, &item)
 	if err != nil {
 		return err
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewGinEngine(auc auth.UseCase, ouc order.UseCase) *gin.Engine {
+func NewGinEngine(auc auth.UseCase, ouc order.UseCase, asaddress string) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(gzipMiddlewareHandle)
@@ -18,7 +18,7 @@ func NewGinEngine(auc auth.UseCase, ouc order.UseCase) *gin.Engine {
 
 	authhandlers.RegisterHTTPEndpoints(router, auc)
 
-	orderhandlers.RegisterHTTPEndpoints(router, authhandlers.AuthMiddlewareHandle(auc), ouc)
+	orderhandlers.RegisterHTTPEndpoints(router, authhandlers.AuthMiddlewareHandle(auc), ouc, asaddress)
 
 	return router
 }

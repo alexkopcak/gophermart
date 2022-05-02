@@ -136,9 +136,17 @@ func (ops *OrderPostgresStorage) GetBalanceByUserID(ctx context.Context, userID 
 }
 
 func (ops *OrderPostgresStorage) WithdrawBalance(ctx context.Context, userID string, bw *models.BalanceWithdraw) error {
+	orderItem, err := ops.GetOrderByOrderUID(ctx, bw.OrderID)
+	if orderItem != nil {
+		return order.ErrOrderBadNumber
+	}
+	if err != nil {
+		return nil
+	}
+
 	var balance int32
 
-	err := ops.db.QueryRow(ctx,
+	err = ops.db.QueryRow(ctx,
 		"SELECT COALESCE(SUM(accrual), 0) "+
 			"FROM orders "+
 			"WHERE user_id = $1 ;", userID).Scan(&balance)
@@ -149,14 +157,6 @@ func (ops *OrderPostgresStorage) WithdrawBalance(ctx context.Context, userID str
 
 	if float32(balance)/100 < bw.Sum {
 		return order.ErrNotEnougthBalance
-	}
-
-	orderItem, err := ops.GetOrderByOrderUID(ctx, bw.OrderID)
-	if orderItem != nil {
-		return order.ErrOrderBadNumber
-	}
-	if err != nil {
-		return nil
 	}
 
 	_, err = ops.db.Exec(ctx,
@@ -224,6 +224,7 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 		var uploaded time.Time
 		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &accrual, &uploaded)
 		if err != nil {
+			log.Debug().Err(err)
 			return nil, nil
 		}
 		item.Accrual = float32(accrual) / 100
