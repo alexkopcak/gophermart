@@ -142,11 +142,11 @@ func (ols *OrderLocalStorage) Withdrawals(ctx context.Context, userID string) ([
 	return result, nil
 }
 
-func (ols *OrderLocalStorage) UpdateOrder(ctx context.Context, order *models.Order) error {
+func (ols *OrderLocalStorage) UpdateOrder(ctx context.Context, orderNumber string, orderStatus string, orderAccrual int32) error {
 	for _, item := range ols.order {
-		if item.Number == order.Number && item.Debet {
-			item.Status = order.Status
-			item.Accrual = int32(order.Accrual * 100)
+		if item.Number == orderNumber && item.Debet {
+			item.Status = orderStatus
+			item.Accrual = orderAccrual
 			return nil
 		}
 	}

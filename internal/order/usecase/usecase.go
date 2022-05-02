@@ -37,8 +37,8 @@ func (ouc *OrderUseCase) Withdrawals(ctx context.Context, userID string) ([]*mod
 	return ouc.orderRepo.Withdrawals(ctx, userID)
 }
 
-func (ouc *OrderUseCase) UpdateOrder(ctx context.Context, order *models.Order) error {
-	return ouc.orderRepo.UpdateOrder(ctx, order)
+func (ouc *OrderUseCase) UpdateOrder(ctx context.Context, orderNumber string, orderStatus string, orderAccrual int32) error {
+	return ouc.orderRepo.UpdateOrder(ctx, orderNumber, orderStatus, orderAccrual)
 }
 
 func (ouc *OrderUseCase) GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error) {

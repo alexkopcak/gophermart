@@ -196,11 +196,11 @@ func (ops *OrderPostgresStorage) Withdrawals(ctx context.Context, userID string)
 	return result, nil
 }
 
-func (ops *OrderPostgresStorage) UpdateOrder(ctx context.Context, order *models.Order) error {
+func (ops *OrderPostgresStorage) UpdateOrder(ctx context.Context, orderNumber string, orderStatus string, orderAccrual int32) error {
 	_, err := ops.db.Exec(ctx,
 		"UPDATE orders "+
 			"SET order_status = $1 , accrual = $2 "+
-			"WHERE (order_id = $3) AND (debet IS TRUE) ;", order.Status, int32(order.Accrual*100), order.Number)
+			"WHERE (order_id = $3) AND (debet IS TRUE) ;", orderStatus, orderAccrual, orderNumber)
 	return err
 }
 
