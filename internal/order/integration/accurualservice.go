@@ -67,10 +67,10 @@ func (as *AccurualService) UpdateData(ctx context.Context, number string) error 
 		return err
 	}
 
-	log.Debug().Str("order number", order.Number).
-		Str("order status", order.Status).
-		Float32("order accural", order.Accrual).
-		Msg("Get from accural data")
+	// log.Debug().Str("order number", order.Number).
+	// 	Str("order status", order.Status).
+	// 	Float32("order accural", order.Accrual).
+	// 	Msg("Get from accural data")
 
 	err = as.OrderUseCase.UpdateOrder(ctx, order.Number, order.Status, int32(order.Accrual*100))
 	return err
