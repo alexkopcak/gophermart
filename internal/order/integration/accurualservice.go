@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -36,7 +35,7 @@ var (
 	ErrTooManyRequests = errors.New("превышено количество запросов к сервису")
 )
 
-func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order, error) {
+func (as *AccurualService) getOrder(number string) (*Order, error) {
 	var result Order
 	for {
 		response, err := http.Get(fmt.Sprintf("%s/api/orders/%s", as.AccrualSystemAddress, number))
@@ -68,7 +67,7 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 			}
 			log.Info().Str("Number", result.Number).Str("Status", result.Status).Float32("Accurual", result.Accrual).Msg("получено")
 			if result.Status == models.OrderStatusProcessing {
-				as.OrderUseCase.UpdateOrder(ctx, result.Number, result.Status, 0)
+				as.OrderUseCase.UpdateOrder(result.Number, result.Status, 0)
 			}
 			if result.Status == models.OrderStatusProcessed ||
 				result.Status == models.OrderStatusInvalid {
@@ -78,12 +77,12 @@ func (as *AccurualService) getOrder(ctx context.Context, number string) (*Order,
 	}
 }
 
-func (as *AccurualService) UpdateData(ctx context.Context, number string) error {
-	order, err := as.getOrder(ctx, number)
+func (as *AccurualService) UpdateData(number string) error {
+	order, err := as.getOrder(number)
 	log.Debug().Err(err)
 	if err != nil {
 		return err
 	}
-	err = as.OrderUseCase.UpdateOrder(ctx, order.Number, order.Status, int32(order.Accrual*100))
+	err = as.OrderUseCase.UpdateOrder(order.Number, order.Status, int32(order.Accrual*100))
 	return err
 }

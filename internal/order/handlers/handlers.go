@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -77,7 +76,7 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 	}
 
 	go func() {
-		h.AccurualService.UpdateData(context.Background(), orderID)
+		h.AccurualService.UpdateData(orderID)
 	}()
 	c.String(http.StatusAccepted, "новый номер заказа принят в обработку")
 	log.Debug().Str("package", "handlers").Str("func", "AddNewOrder").Msg("exit")
