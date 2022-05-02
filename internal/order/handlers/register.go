@@ -9,6 +9,7 @@ func RegisterHTTPEndpoints(router *gin.Engine, midlleware gin.HandlerFunc, ouc o
 	handler := NewOrderHandler(ouc, asAddress)
 
 	AccuralServiceBackground(ouc, handler.AccurualService)
+
 	routes := router.Use(midlleware)
 	//.Use(AccuralServiceHandler(ouc, handler.AccurualService))
 

@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/alexkopcak/gophermart/internal/models"
@@ -99,8 +98,6 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 		item.Accrual = float32(accrual) / 100
 		item.Uploaded = timeValue.Time.Format(time.RFC3339)
 		if err != nil {
-			fmt.Println("!!!\nerror\n!!!")
-			fmt.Println(err.Error())
 			log.Debug().Err(err)
 			return nil, err
 		}
