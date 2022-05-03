@@ -54,7 +54,8 @@ func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNu
 		Str("order.id", result.Number).
 		Str("order.status", result.Status).
 		Float32("order.accrual", result.Accrual).
-		Str("order.time", result.Uploaded)
+		Str("order.time", result.Uploaded).
+		Msg("GetOrderByUID result")
 
 	return result, nil
 }
@@ -107,6 +108,13 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 			log.Debug().Err(err)
 			return nil, err
 		}
+		log.Debug().Str("order.user", item.UserName).
+			Str("order.id", item.Number).
+			Str("order.status", item.Status).
+			Float32("order.accrual", item.Accrual).
+			Str("order.time", item.Uploaded).
+			Msg("getOrderListByUID result item")
+
 		result = append(result, &item)
 	}
 
