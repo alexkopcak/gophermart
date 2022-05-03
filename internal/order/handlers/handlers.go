@@ -110,6 +110,7 @@ func (h *OrderHandler) GetUserOrders(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		return
 	}
+
 	if len(orders) == 0 {
 		c.JSON(http.StatusNoContent, orders)
 		return

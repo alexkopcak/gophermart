@@ -12,6 +12,6 @@ type Order struct {
 	UserName string  `json:"-"`
 	Number   string  `json:"number"`
 	Status   string  `json:"status"`
-	Accrual  float32 `json:"accurual,omitempty"`
+	Accrual  float32 `json:"accrual,omitempty"`
 	Uploaded string  `json:"uploaded_at"`
 }
