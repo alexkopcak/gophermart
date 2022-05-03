@@ -10,7 +10,6 @@ import (
 )
 
 type OrderItem struct {
-	//	id      int32
 	UserID  string
 	Number  string
 	Debet   bool
@@ -20,12 +19,12 @@ type OrderItem struct {
 }
 
 type OrderLocalStorage struct {
-	order []*OrderItem
+	order []OrderItem
 }
 
 func NewOrderLocalStorage() order.OrderRepository {
 	return &OrderLocalStorage{
-		order: make([]*OrderItem, 0),
+		order: make([]OrderItem, 0),
 	}
 }
 
@@ -41,7 +40,7 @@ func (ols *OrderLocalStorage) InsertOrder(ctx context.Context, userID string, or
 
 	}
 
-	item := &OrderItem{
+	item := OrderItem{
 		UserID:  userID,
 		Number:  orderNumber,
 		Debet:   true,
@@ -53,11 +52,11 @@ func (ols *OrderLocalStorage) InsertOrder(ctx context.Context, userID string, or
 	return nil
 }
 
-func (ols *OrderLocalStorage) GetOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error) {
-	result := make([]*models.Order, 0)
+func (ols *OrderLocalStorage) GetOrdersListByUserID(ctx context.Context, userID string) ([]models.Order, error) {
+	result := make([]models.Order, 0)
 	for _, item := range ols.order {
 		if item.UserID == userID {
-			resultItem := &models.Order{
+			resultItem := models.Order{
 				UserName: item.UserID,
 				Number:   item.Number,
 				Status:   item.Status,
@@ -113,7 +112,7 @@ func (ols *OrderLocalStorage) WithdrawBalance(ctx context.Context, userID string
 		return order.ErrNotEnougthBalance
 	}
 
-	item := &OrderItem{
+	item := OrderItem{
 		UserID:  userID,
 		Number:  bw.OrderID,
 		Debet:   false,
