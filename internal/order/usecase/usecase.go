@@ -21,7 +21,7 @@ func (ouc *OrderUseCase) AddNewOrder(ctx context.Context, userID string, orderNu
 	return ouc.orderRepo.InsertOrder(ctx, userID, orderNumber)
 }
 
-func (ouc *OrderUseCase) GetOrders(ctx context.Context, userID string) ([]*models.Order, error) {
+func (ouc *OrderUseCase) GetOrders(ctx context.Context, userID string) ([]models.Order, error) {
 	return ouc.orderRepo.GetOrdersListByUserID(ctx, userID)
 }
 

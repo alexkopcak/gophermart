@@ -82,8 +82,8 @@ func (ops *OrderPostgresStorage) InsertOrder(ctx context.Context, userID string,
 	return err
 }
 
-func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error) {
-	result := make([]*models.Order, 0)
+func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, userID string) ([]models.Order, error) {
+	result := make([]models.Order, 0)
 
 	rows, err := ops.db.Query(ctx,
 		"SELECT user_id, order_id, order_status, accrual, uploaded_at "+
@@ -115,7 +115,7 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 			Str("order.time", item.Uploaded).
 			Msg("getOrderListByUID result item")
 
-		result = append(result, &item)
+		result = append(result, item)
 	}
 
 	return result, nil
