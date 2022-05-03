@@ -49,8 +49,14 @@ func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNu
 
 	result.Accrual = float32(accrual) / 100
 	result.Uploaded = timeValue.Time.Format(time.RFC3339)
-	return result, nil
 
+	log.Debug().Str("order.user", result.UserName).
+		Str("order.id", result.Number).
+		Str("order.status", result.Status).
+		Float32("order.accrual", result.Accrual).
+		Str("order.time", result.Uploaded)
+
+	return result, nil
 }
 
 func (ops *OrderPostgresStorage) InsertOrder(ctx context.Context, userID string, orderNumber string) error {
