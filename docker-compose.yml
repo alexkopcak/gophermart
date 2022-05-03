@@ -21,9 +21,3 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "5050:80"
-
-networks:
-  gophermart_net:
-    name: gophermart_net
-    driver: bridge
-    external: true

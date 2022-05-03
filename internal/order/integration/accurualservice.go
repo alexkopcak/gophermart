@@ -3,7 +3,6 @@ package integration
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -31,10 +30,6 @@ func NewAccurualService(address string, usecase order.UseCase) *AccurualService 
 		OrderUseCase:         usecase,
 	}
 }
-
-var (
-	ErrTooManyRequests = errors.New("превышено количество запросов к сервису")
-)
 
 func (as *AccurualService) getOrder(number string) (*Order, error) {
 	var result Order
