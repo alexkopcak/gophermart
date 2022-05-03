@@ -37,7 +37,7 @@ func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNu
 	err := ops.db.QueryRow(ctx,
 		"SELECT user_id, order_id, order_status, accrual, uploaded_at "+
 			"FROM orders "+
-			"WHERE (debet IS TRUE) AND (order_id = $1);", orderNumber).
+			"WHERE order_id = $1 ;", orderNumber).
 		Scan(&result.UserName, &result.Number, &result.Status, &accrual, &timeValue)
 
 	if err != nil {
