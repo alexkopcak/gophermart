@@ -31,7 +31,7 @@ func NewAccurualService(address string, usecase order.UseCase) *AccurualService 
 	}
 }
 
-func (as *AccurualService) getOrder(number string) (*Order, error) {
+func (as *AccurualService) UpdateData(number string) error {
 	var result Order
 	for {
 		response, err := http.Get(fmt.Sprintf("%s/api/orders/%s", as.AccrualSystemAddress, number))
@@ -42,7 +42,7 @@ func (as *AccurualService) getOrder(number string) (*Order, error) {
 		defer response.Body.Close()
 
 		if response.StatusCode == http.StatusInternalServerError {
-			return nil, nil
+			return nil
 		}
 
 		if response.StatusCode == http.StatusTooManyRequests {
@@ -60,26 +60,42 @@ func (as *AccurualService) getOrder(number string) (*Order, error) {
 		if response.StatusCode == http.StatusOK {
 			err = json.NewDecoder(response.Body).Decode(&result)
 			if err != nil {
-				return nil, err
+				return err
 			}
+
 			log.Info().Str("response.Status", response.Status).Str("Number", result.Number).Str("Status", result.Status).Float32("Accurual", result.Accrual).Msg("get order")
+
+			/*
+				REGISTERED — заказ зарегистрирован, но не начисление не рассчитано;
+				INVALID — заказ не принят к расчёту, и вознаграждение не будет начислено;
+				PROCESSING — расчёт начисления в процессе;
+				PROCESSED — расчёт начисления окончен
+			*/
+
+			var status string
+			switch result.Status {
+			case "REGISTERED":
+				status = models.OrderStatusProcessing
+			case "INVALID":
+				status = models.OrderStatusInvalid
+			case "PROCESSING":
+				status = models.OrderStatusProcessing
+			case "PROCESSED":
+				status = models.OrderStatusProcessed
+			}
+
+			if status == "" {
+				continue
+			}
+
 			if result.Status == models.OrderStatusProcessing {
-				as.OrderUseCase.UpdateOrder(context.Background(), result.Number, result.Status, 0)
+				as.OrderUseCase.UpdateOrder(context.Background(), result.Number, status, 0)
 			}
 			if result.Status == models.OrderStatusProcessed ||
 				result.Status == models.OrderStatusInvalid {
-				return &result, nil
+				as.OrderUseCase.UpdateOrder(context.Background(), result.Number, status, int32(result.Accrual*100))
+				return nil
 			}
 		}
 	}
-}
-
-func (as *AccurualService) UpdateData(number string) error {
-	order, err := as.getOrder(number)
-	log.Debug().Err(err)
-	if err != nil {
-		return err
-	}
-	err = as.OrderUseCase.UpdateOrder(context.Background(), order.Number, order.Status, int32(order.Accrual*100))
-	return err
 }
