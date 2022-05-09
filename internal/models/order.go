@@ -1,5 +1,7 @@
 package models
 
+import "github.com/jackc/pgtype"
+
 const (
 	OrderStatusNew        = "NEW"
 	OrderStatusProcessing = "PROCESSING"
@@ -9,9 +11,9 @@ const (
 )
 
 type Order struct {
-	UserName string  `json:"-"`
-	Number   string  `json:"number"`
-	Status   string  `json:"status"`
-	Accrual  float32 `json:"accrual,omitempty"`
-	Uploaded string  `json:"uploaded_at"`
+	UserName string           `json:"-"`
+	Number   string           `json:"number"`
+	Status   string           `json:"status"`
+	Accrual  float32          `json:"accrual,omitempty"`
+	Uploaded pgtype.Timestamp `json:"uploaded_at"`
 }

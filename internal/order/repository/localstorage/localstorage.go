@@ -2,10 +2,10 @@ package localstorage
 
 import (
 	"context"
-	"time"
 
 	"github.com/alexkopcak/gophermart/internal/models"
 	"github.com/alexkopcak/gophermart/internal/order"
+	"github.com/jackc/pgtype"
 )
 
 type OrderItem struct {
@@ -14,7 +14,7 @@ type OrderItem struct {
 	Debet   bool
 	Status  string
 	Accrual int32
-	Date    time.Time
+	Date    pgtype.Timestamp
 }
 
 type OrderLocalStorage struct {
@@ -44,7 +44,7 @@ func (ols *OrderLocalStorage) InsertOrder(ctx context.Context, userID string, or
 		Debet:   true,
 		Status:  models.OrderStatusNew,
 		Accrual: 0,
-		Date:    time.Now(),
+		Date:    pgtype.Timestamp{},
 	}
 	ols.order = append(ols.order, item)
 	return nil
@@ -59,7 +59,7 @@ func (ols *OrderLocalStorage) GetOrdersListByUserID(ctx context.Context, userID 
 				Number:   item.Number,
 				Status:   item.Status,
 				Accrual:  float32(item.Accrual) / 100,
-				Uploaded: item.Date.Format(time.RFC3339),
+				Uploaded: item.Date,
 			}
 			result = append(result, resultItem)
 		}
@@ -89,7 +89,7 @@ func (ols *OrderLocalStorage) GetOrderByOrderUID(ctx context.Context, userID str
 				Number:   item.Number,
 				Status:   item.Status,
 				Accrual:  float32(item.Accrual) / 100,
-				Uploaded: item.Date.Format(time.RFC3339),
+				Uploaded: item.Date,
 			}, nil
 		}
 	}
@@ -116,7 +116,7 @@ func (ols *OrderLocalStorage) WithdrawBalance(ctx context.Context, userID string
 		Debet:   false,
 		Status:  models.OrderStatusWithDrawn,
 		Accrual: int32(bw.Sum),
-		Date:    time.Now(),
+		Date:    pgtype.Timestamp{},
 	}
 
 	ols.order = append(ols.order, item)
@@ -129,9 +129,9 @@ func (ols *OrderLocalStorage) Withdrawals(ctx context.Context, userID string) ([
 	for _, item := range ols.order {
 		if item.UserID == userID && !item.Debet {
 			resultItem := &models.Withdrawals{
-				OrderID: item.Number,
-				Sum:     float32(item.Accrual) / 100,
-				//ProcessedAt: item.Date.Format(time.RFC3339),
+				OrderID:     item.Number,
+				Sum:         float32(item.Accrual) / 100,
+				ProcessedAt: item.Date,
 			}
 			result = append(result, resultItem)
 		}
@@ -160,7 +160,7 @@ func (ols *OrderLocalStorage) GetNotFinnalizedOrdersListByUserID(ctx context.Con
 				Number:   item.Number,
 				Status:   item.Status,
 				Accrual:  float32(item.Accrual) / 100,
-				Uploaded: item.Date.Format(time.RFC3339),
+				Uploaded: item.Date,
 			}
 			result = append(result, resultItem)
 		}
@@ -178,7 +178,7 @@ func (ols *OrderLocalStorage) GetNotFinnalizedOrdersList(ctx context.Context) ([
 				Number:   item.Number,
 				Status:   item.Status,
 				Accrual:  float32(item.Accrual) / 100,
-				Uploaded: item.Date.Format(time.RFC3339),
+				Uploaded: item.Date,
 			}
 			result = append(result, resultItem)
 		}

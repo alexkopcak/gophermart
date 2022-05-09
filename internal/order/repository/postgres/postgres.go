@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"time"
 
 	"github.com/alexkopcak/gophermart/internal/models"
 	"github.com/alexkopcak/gophermart/internal/order"
@@ -50,13 +49,13 @@ func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNu
 	}
 
 	result.Accrual = float32(accrual) / 100
-	result.Uploaded = timeValue.Time.Format(time.RFC3339)
+	result.Uploaded = timeValue
 
 	logger.Debug().Str("order.user", result.UserName).
 		Str("order.id", result.Number).
 		Str("order.status", result.Status).
 		Float32("order.accrual", result.Accrual).
-		Str("order.time", result.Uploaded).
+		Time("order.time", result.Uploaded.Time).
 		Msg("GetOrderByUID result")
 
 	return result, nil
@@ -122,7 +121,7 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 		var accrual int32
 		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &accrual, &timeValue)
 		item.Accrual = float32(accrual) / 100
-		item.Uploaded = timeValue.Time.Format(time.RFC3339)
+		item.Uploaded = timeValue
 		if err != nil {
 			logger.Debug().Err(err).Msg("exit with error")
 			return nil, err
@@ -131,7 +130,7 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 			Str("order.id", item.Number).
 			Str("order.status", item.Status).
 			Float32("order.accrual", item.Accrual).
-			Str("order.time", item.Uploaded).
+			Time("order.time", item.Uploaded.Time).
 			Msg("getOrderListByUID result item")
 
 		result = append(result, item)
@@ -302,7 +301,7 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 			return nil, nil
 		}
 		item.Accrual = float32(accrual) / 100
-		item.Uploaded = uploaded.Time.Format(time.RFC3339)
+		item.Uploaded = uploaded
 		result = append(result, &item)
 	}
 
@@ -339,7 +338,7 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersList(ctx context.Context)
 			return nil, nil
 		}
 		item.Accrual = float32(accrual) / 100
-		item.Uploaded = uploaded.Time.Format(time.RFC3339)
+		item.Uploaded = uploaded
 		result = append(result, &item)
 	}
 
