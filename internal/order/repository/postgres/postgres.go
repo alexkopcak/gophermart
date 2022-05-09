@@ -60,24 +60,30 @@ func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNu
 }
 
 func (ops *OrderPostgresStorage) InsertOrder(ctx context.Context, userID string, orderNumber string) error {
-	orderItem, err := ops.GetOrderByOrderUID(ctx, orderNumber)
-	if orderItem != nil {
-		if orderItem.UserName == userID {
-			return order.ErrOrderAlreadyInsertedByUser
-		} else {
-			return order.ErrOrderAlreadyInsertedByOtherUser
-		}
-	}
+	cTag, err := ops.db.Exec(ctx,
+		"INSERT INTO orders "+
+			"(user_id, order_id, debet, order_status, accrual) "+
+			"VALUES ($1, $2, TRUE, $3, $4) "+
+			"ON CONFLICT (order_id) DO NOTHING;",
+		userID, orderNumber, models.OrderStatusNew, 0)
+
 	if err != nil {
 		return err
 	}
 
-	_, err = ops.db.Exec(ctx,
-		"INSERT INTO orders "+
-			"(user_id, order_id, debet, order_status, accrual) "+
-			"VALUES ($1, $2, TRUE, $3, $4);",
-		userID, orderNumber, models.OrderStatusNew, 0)
-
+	if cTag.RowsAffected() == 0 {
+		orderItem, err := ops.GetOrderByOrderUID(ctx, orderNumber)
+		if orderItem != nil {
+			if orderItem.UserName == userID {
+				return order.ErrOrderAlreadyInsertedByUser
+			} else {
+				return order.ErrOrderAlreadyInsertedByOtherUser
+			}
+		}
+		if err != nil {
+			return err
+		}
+	}
 	return err
 }
 
