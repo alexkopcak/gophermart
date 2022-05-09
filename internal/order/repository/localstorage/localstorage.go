@@ -129,9 +129,9 @@ func (ols *OrderLocalStorage) Withdrawals(ctx context.Context, userID string) ([
 	for _, item := range ols.order {
 		if item.UserID == userID && !item.Debet {
 			resultItem := &models.Withdrawals{
-				OrderID:     item.Number,
-				Sum:         float32(item.Accrual) / 100,
-				ProcessedAt: item.Date.Format(time.RFC3339),
+				OrderID: item.Number,
+				Sum:     float32(item.Accrual) / 100,
+				//ProcessedAt: item.Date.Format(time.RFC3339),
 			}
 			result = append(result, resultItem)
 		}

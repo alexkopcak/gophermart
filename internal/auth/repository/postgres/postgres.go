@@ -18,12 +18,13 @@ type PostgresStorage struct {
 }
 
 func NewPostgresStorage(dbURI string) auth.UserRepository {
-	log.Debug().Msg("new postgres storage")
+	logger := log.With().Str("package", "postgres").Str("func", "NewPostgresStroage").Logger()
+	logger.Debug().Msg("new postgres storage")
 	MakeMigrations(dbURI)
 
 	conn, err := pgx.Connect(context.Background(), dbURI)
 	if err != nil {
-		log.Fatal().Err(err)
+		logger.Fatal().Err(err)
 	}
 	return &PostgresStorage{
 		db: conn,
