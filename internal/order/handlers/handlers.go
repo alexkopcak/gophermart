@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/alexkopcak/gophermart/internal/auth"
 	"github.com/alexkopcak/gophermart/internal/models"
@@ -27,6 +28,11 @@ func NewOrderHandler(ouc order.UseCase, accrualServiceAddress string) *OrderHand
 		OrderUseCase:    ouc,
 		AccurualService: accrualService,
 	}
+}
+
+type orderItem struct {
+	models.Order
+	Uploaded string `json:"uploaded_at"`
 }
 
 func (h *OrderHandler) AddNewOrder(c *gin.Context) {
@@ -123,7 +129,19 @@ func (h *OrderHandler) GetUserOrders(c *gin.Context) {
 		c.JSON(http.StatusNoContent, orders)
 		return
 	}
-	c.JSON(http.StatusOK, orders)
+
+	var result []orderItem
+	for _, item := range orders {
+		var resultItem orderItem
+		resultItem.Number = item.Number
+		resultItem.Status = item.Status
+		resultItem.Accrual = item.Accrual
+		resultItem.Uploaded = item.Uploaded.Time.Format(time.RFC3339)
+
+		result = append(result, resultItem)
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 func (h *OrderHandler) GetUserBalance(c *gin.Context) {
