@@ -54,7 +54,11 @@ func (ps *PostgresStorage) CreateUser(ctx context.Context, user *models.User) er
 
 func (ps *PostgresStorage) GetUser(ctx context.Context, userName string) (*models.User, error) {
 	var user = new(models.User)
-	err := ps.db.QueryRow(ctx, "SELECT login, password FROM users WHERE login = $1 ;", userName).Scan(&user.UserName, &user.Password)
+	err := ps.db.QueryRow(ctx,
+		"SELECT login, password "+
+			"FROM users "+
+			"WHERE login = $1 "+
+			"LIMIT 1;", userName).Scan(&user.UserName, &user.Password)
 	if errors.Is(err, pgx.ErrNoRows) || user.UserName == "" {
 		return nil, auth.ErrUserNotExsist
 	}
