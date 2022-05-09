@@ -23,14 +23,16 @@ func NewAuthHandler(auc auth.UseCase) *AuthHandler {
 }
 
 func (h *AuthHandler) SignUp(c *gin.Context) {
-	log.Debug().Str("package", "handlers").Str("func", "SignUp").Msg("start")
+	log.Logger = log.With().Str("package", "handlers").Str("function", "SignUp").Logger()
+	log.Debug().Msg("enter")
+	defer log.Debug().Msg("exit")
+
 	var user models.User
 	defer c.Request.Body.Close()
 
 	if strings.Compare(c.ContentType(), "application/json") != 0 {
-		log.Debug().Str("package", "handlers").Str("func", "SignUp").Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
+		log.Debug().Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
 		c.String(http.StatusBadRequest, "неверный формат запроса")
-		c.Abort()
 		return
 	}
 
@@ -38,47 +40,46 @@ func (h *AuthHandler) SignUp(c *gin.Context) {
 	err = json.NewDecoder(c.Request.Body).Decode(&user)
 
 	if err != nil || user.UserName == "" {
-		log.Debug().Str("package", "handlers").Str("func", "SignUp").Str("user", user.UserName).Msg("exit with error: empty user name")
+		log.Debug().Str("user", user.UserName).Msg("exit with error: empty user name")
 		c.String(http.StatusBadRequest, "неверный формат запроса", err.Error())
-		c.Abort()
 		return
 	}
 
 	err = h.AuthUseCase.SignUp(c.Request.Context(), user.UserName, user.Password)
 	if errors.Is(err, auth.ErrUserAlreadyExsist) {
-		log.Debug().Str("package", "handlers").Str("func", "SignUp").Msg("exit with error: user already exsist")
+		log.Debug().Msg("exit with error: user already exsist")
 		c.String(http.StatusConflict, "логин уже занят")
-		c.Abort()
 		return
 	}
 	if err != nil {
-		log.Debug().Str("package", "handlers").Str("func", "SignUp").Msg("exit with error: something went wrong")
+		log.Debug().Err(err).Msg("exit with error: something went wrong")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
-		c.Abort()
 		return
 	}
 
 	token, err := h.AuthUseCase.SignIn(c.Request.Context(), user.UserName, user.Password)
 	if err != nil {
-		log.Debug().Str("package", "handlers").Str("func", "SignUp").Msg("exit with error")
+		log.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
-		c.Abort()
 		return
 	}
 
 	c.SetCookie("Authorization", token, 3600, "/", "", false, false)
 	c.String(http.StatusOK, "пользователь успешно зарегистрирован и аутентифицирован")
-	log.Debug().Str("package", "handlers").Str("func", "SignUp").Msg("user autentithication success")
-	log.Debug().Str("package", "handlers").Str("func", "SignUp").Msg("exit")
+	log.Debug().Msg("user autentithication success")
 }
 
 func (h *AuthHandler) SignIn(c *gin.Context) {
+	log.Logger = log.With().Str("package", "handlers").Str("function", "SignIn").Logger()
+	log.Debug().Msg("enter")
+	defer log.Debug().Msg("exit")
+
 	var user models.User
 	defer c.Request.Body.Close()
 
 	if strings.Compare(c.ContentType(), "application/json") != 0 {
+		log.Debug().Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
 		c.String(http.StatusBadRequest, "неверный формат запроса")
-		c.Abort()
 		return
 	}
 
@@ -86,23 +87,24 @@ func (h *AuthHandler) SignIn(c *gin.Context) {
 	err = json.NewDecoder(c.Request.Body).Decode(&user)
 
 	if err != nil || user.UserName == "" {
+		log.Debug().Str("user.UserName", user.UserName).Msg("exit with error: empty user name")
 		c.String(http.StatusBadRequest, "неверный формат запроса")
-		c.Abort()
 		return
 	}
 
 	token, err := h.AuthUseCase.SignIn(c.Request.Context(), user.UserName, user.Password)
 	if errors.Is(err, auth.ErrUserNotExsist) {
+		log.Debug().Msg("exit with error: bad user name or password")
 		c.String(http.StatusUnauthorized, "неверная пара логин/пароль")
-		c.Abort()
 		return
 	}
 	if err != nil {
+		log.Debug().Str("user.UserName", user.UserName).Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
-		c.Abort()
 		return
 	}
 
+	log.Debug().Msg("user authorization complete")
 	c.SetCookie("Authorization", token, 3600, "/", "", false, false)
 	c.String(http.StatusOK, "пользователь успешно аутентифицирован")
 }

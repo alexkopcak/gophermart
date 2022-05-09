@@ -21,7 +21,6 @@ func NewPostgresStorage(dbURI string) auth.UserRepository {
 	log.Debug().Msg("new postgres storage")
 	MakeMigrations(dbURI)
 
-	log.Debug().Msg("pgx connect")
 	conn, err := pgx.Connect(context.Background(), dbURI)
 	if err != nil {
 		log.Fatal().Err(err)
@@ -32,6 +31,11 @@ func NewPostgresStorage(dbURI string) auth.UserRepository {
 }
 
 func (ps *PostgresStorage) CreateUser(ctx context.Context, user *models.User) error {
+	log.Logger = log.With().Str("package", "postgres").Str("func", "CreateUser").Logger()
+
+	log.Debug().Msg("enter")
+	defer log.Debug().Msg("exit")
+
 	log.Debug().Str("user", user.UserName).Msg("try to add user")
 
 	_, err := ps.db.Exec(ctx,
@@ -45,14 +49,21 @@ func (ps *PostgresStorage) CreateUser(ctx context.Context, user *models.User) er
 				return auth.ErrUserAlreadyExsist
 			}
 		}
-		log.Debug().Str("error", err.Error()).Msg("got error")
+		log.Debug().Err(err).Msg("exit with error")
 		return err
 	}
 
+	log.Debug().Msg("user created")
 	return nil
 }
 
 func (ps *PostgresStorage) GetUser(ctx context.Context, userName string) (*models.User, error) {
+	log.Logger = log.With().Str("package", "postgres").Str("func", "GetUser").Logger()
+
+	log.Debug().Msg("enter")
+	defer log.Debug().Msg("exit")
+
+	log.Debug().Str("user", userName).Msg("get user by name")
 	var user = new(models.User)
 	err := ps.db.QueryRow(ctx,
 		"SELECT login, password "+
@@ -60,10 +71,14 @@ func (ps *PostgresStorage) GetUser(ctx context.Context, userName string) (*model
 			"WHERE login = $1 "+
 			"LIMIT 1;", userName).Scan(&user.UserName, &user.Password)
 	if errors.Is(err, pgx.ErrNoRows) || user.UserName == "" {
+		log.Debug().Str("user", userName).Msg("user not exsist")
 		return nil, auth.ErrUserNotExsist
 	}
 	if err != nil {
+		log.Err(err).Msg("exit with error")
 		return nil, err
 	}
+
+	log.Debug().Str("user", userName).Msg("user finded at storage")
 	return user, nil
 }

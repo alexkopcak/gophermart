@@ -32,11 +32,15 @@ func NewAccurualService(address string, usecase order.UseCase) *AccurualService 
 }
 
 func (as *AccurualService) UpdateData(number string) error {
+	log.Logger = log.With().Str("package", "integration").Str("function", "UpdateData").Logger()
+	log.Debug().Msg("enter")
+	defer log.Debug().Msg("exit")
+
 	var result Order
 	for {
 		response, err := http.Get(fmt.Sprintf("%s/api/orders/%s", as.AccrualSystemAddress, number))
 		if err != nil {
-			log.Info().Err(err)
+			log.Debug().Err(err)
 			continue
 		}
 		defer response.Body.Close()
@@ -49,10 +53,11 @@ func (as *AccurualService) UpdateData(number string) error {
 			timeSleepString := response.Header.Get("Retry-After")
 			timeSleep, err := strconv.Atoi(timeSleepString)
 			log.Debug().Str("Retry-After", timeSleepString).Msg("catch timeout")
-			log.Debug().Err(err)
+			log.Debug().Err(err).Msg("error message")
 			if err != nil {
 				continue
 			}
+			log.Debug().Int("timeSleep", timeSleep).Msg("wait a some time")
 			time.Sleep(time.Duration(timeSleep) * time.Second)
 			continue
 		}
@@ -63,7 +68,7 @@ func (as *AccurualService) UpdateData(number string) error {
 				return err
 			}
 
-			log.Info().Str("response.Status", response.Status).Str("Number", result.Number).Str("Status", result.Status).Float32("Accurual", result.Accrual).Msg("get order")
+			log.Debug().Str("response.Status", response.Status).Str("Number", result.Number).Str("Status", result.Status).Float32("Accurual", result.Accrual).Msg("get order")
 
 			/*
 				REGISTERED — заказ зарегистрирован, но не начисление не рассчитано;

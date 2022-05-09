@@ -10,34 +10,28 @@ import (
 
 func AuthMiddlewareHandle(auc auth.UseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("enter")
+		log.Logger = log.With().Str("package", "handlers").Str("func", "AuthMiddlewareHandle").Logger()
+
+		log.Debug().Msg("enter")
+		defer log.Debug().Msg("exit")
 
 		token, err := c.Cookie("Authorization")
-		log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Str("token", token).Msg("get token value")
+		log.Debug().Str("token", token).Msg("get token value")
 
 		if token == "" || err != nil {
-			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("exit with error")
+			log.Debug().Err(err).Msg("exit with error")
 			c.String(http.StatusUnauthorized, "пользователь не аутентифицирован")
-			c.Abort()
 			return
 		}
 
 		user, err := auc.ParseToken(c.Request.Context(), token)
-		if user != nil {
-			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Str("user", user.UserName).Str("pass", user.Password).Msg("")
-		}
-		if err != nil {
-			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Str("error", err.Error()).Msg("")
-		}
+		log.Debug().Str("user", user.UserName).Msg("user from jw token")
 
 		if err != nil || user.UserName == "" {
-			log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("exit with error")
+			log.Debug().Err(err).Msg("exit with error")
 			c.String(http.StatusUnauthorized, "пользователь не аутентифицирован")
-			c.Abort()
 			return
 		}
-		log.Debug().Str("package", "httpserver").Str("func", "authmiddlewarehandle").Msg("exit")
-
 		c.Set(auth.CtxUserKey, user.UserName)
 		c.Next()
 	}

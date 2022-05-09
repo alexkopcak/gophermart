@@ -11,9 +11,10 @@ import (
 )
 
 func MakeMigrations(dbURI string) {
-	log.Debug().Msg("Make migrations")
-	log.Debug().Msg("sql.open")
-	log.Debug().Msg(dbURI)
+	log.Logger = log.With().Str("package", "postgres").Str("function", "MakeMigrations").Logger()
+
+	log.Debug().Msg("make migrations")
+	defer log.Debug().Msg("exit")
 	db, err := sql.Open("postgres", dbURI)
 	log.Fatal().Err(err)
 
@@ -28,6 +29,9 @@ func MakeMigrations(dbURI string) {
 		driver)
 	log.Fatal().Err(err)
 
+	if m == nil {
+		log.Panic().Msg("can't create migrate instance")
+	}
 	log.Debug().Msg("m up")
 	log.Fatal().Err(m.Up())
 
