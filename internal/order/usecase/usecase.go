@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/alexkopcak/gophermart/internal/models"
 	"github.com/alexkopcak/gophermart/internal/order"
+	"github.com/theplant/luhn"
 )
 
 type OrderUseCase struct {
@@ -17,7 +19,23 @@ func NewOrderUseCase(orderRepo order.OrderRepository) order.UseCase {
 	}
 }
 
+func checkOrderID(orderID string) error {
+	id, err := strconv.Atoi(orderID)
+	if err != nil {
+		return err
+	}
+
+	if !luhn.Valid(id) {
+		return order.ErrOrderBadNumber
+	}
+	return nil
+}
+
 func (ouc *OrderUseCase) AddNewOrder(ctx context.Context, userID string, orderNumber string) error {
+	err := checkOrderID(orderNumber)
+	if err != nil {
+		return err
+	}
 	return ouc.orderRepo.InsertOrder(ctx, userID, orderNumber)
 }
 
@@ -30,6 +48,11 @@ func (ouc *OrderUseCase) GetBalance(ctx context.Context, useerID string) (*model
 }
 
 func (ouc *OrderUseCase) BalanceWithdraw(ctx context.Context, userID string, bw *models.BalanceWithdraw) error {
+	err := checkOrderID(bw.OrderID)
+	if err != nil {
+		return err
+	}
+
 	return ouc.orderRepo.WithdrawBalance(ctx, userID, bw)
 }
 

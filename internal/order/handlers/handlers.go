@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/alexkopcak/gophermart/internal/auth"
@@ -14,7 +13,6 @@ import (
 	"github.com/alexkopcak/gophermart/internal/order/integration"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
-	"github.com/theplant/luhn"
 )
 
 type OrderHandler struct {
@@ -49,15 +47,9 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 		return
 	}
 
-	id, err := strconv.Atoi(orderID)
-
-	if err != nil || !luhn.Valid(id) {
-		c.String(http.StatusUnprocessableEntity, "неверный формат номера заказа")
-		return
-	}
-
 	userID, err := getUserID(c)
 	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -69,6 +61,10 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 		}
 		if errors.Is(err, order.ErrOrderAlreadyInsertedByUser) {
 			c.String(http.StatusOK, "номер заказа уже был загружен этим пользователем")
+			return
+		}
+		if errors.Is(err, order.ErrOrderBadNumber) {
+			c.String(http.StatusUnprocessableEntity, "неверный формат номера заказа")
 			return
 		}
 		c.String(http.StatusInternalServerError, err.Error())
@@ -157,25 +153,18 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 		return
 	}
 
-	id, err := strconv.Atoi(balWithdraw.OrderID)
-
-	if err != nil || !luhn.Valid(id) {
-		c.String(http.StatusUnprocessableEntity, "неверный формат номера заказа")
-		return
-	}
-
 	userID, err := getUserID(c)
 	if err != nil {
 		return
 	}
 	err = h.OrderUseCase.BalanceWithdraw(c.Request.Context(), userID, &balWithdraw)
 
-	if errors.Is(err, order.ErrOrderBadNumber) {
-		c.String(http.StatusUnprocessableEntity, "неверный номер заказа")
-		return
-	}
-
 	if err != nil {
+		if errors.Is(err, order.ErrOrderBadNumber) {
+			c.String(http.StatusUnprocessableEntity, "неверный номер заказа")
+			return
+		}
+
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
