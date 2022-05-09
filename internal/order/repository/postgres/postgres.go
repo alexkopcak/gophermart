@@ -17,7 +17,6 @@ type OrderPostgresStorage struct {
 
 func NewOrderPostgresStorage(dbURI string) order.OrderRepository {
 	log.Debug().Msg("new order postgres storage")
-	//MakeMigrations(dbURI)
 
 	log.Debug().Msg("pgx connect")
 	conn, err := pgx.Connect(context.Background(), dbURI)
@@ -215,12 +214,12 @@ func (ops *OrderPostgresStorage) Withdrawals(ctx context.Context, userID string)
 }
 
 func (ops *OrderPostgresStorage) UpdateOrder(ctx context.Context, orderNumber string, orderStatus string, orderAccrual int32) error {
-	log.Info().Str("orderStatus", orderStatus).Str("orderNumber", orderNumber).Int32("orderAccurual", orderAccrual).Msg("перед запросом")
+	log.Info().Str("orderStatus", orderStatus).Str("orderNumber", orderNumber).Int32("orderAccurual", orderAccrual).Msg("before query")
 	comTag, err := ops.db.Exec(context.Background(),
 		"UPDATE orders SET order_status = $1 , accrual = $2 WHERE order_id = $3 ;",
 		orderStatus, orderAccrual, orderNumber)
 
-	log.Info().Int64("обновлено", comTag.RowsAffected()).Msg("обновлено полей")
+	log.Info().Int64("Count", comTag.RowsAffected()).Msg("Rows affected")
 	log.Info().Err(err)
 	return err
 }

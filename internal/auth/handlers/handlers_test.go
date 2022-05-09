@@ -33,9 +33,4 @@ func TestSignUp(t *testing.T) {
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/api/user/register", bytes.NewBuffer(body))
 	router.ServeHTTP(w, req)
-
-	//	bodyBytes, _ := io.ReadAll(w.Body)
-	//	fmt.Printf("\n\n%v\n\n", string(bodyBytes))
-
-	//assert.Equal(t, http.StatusOK, w.Code)
 }

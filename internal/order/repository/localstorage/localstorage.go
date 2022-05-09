@@ -2,7 +2,6 @@ package localstorage
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/alexkopcak/gophermart/internal/models"
@@ -30,7 +29,6 @@ func NewOrderLocalStorage() order.OrderRepository {
 
 func (ols *OrderLocalStorage) InsertOrder(ctx context.Context, userID string, orderNumber string) error {
 	orderItem, _ := ols.GetOrderByOrderUID(ctx, userID, orderNumber)
-	fmt.Printf("%v\n", orderItem)
 	if orderItem != nil {
 		if orderItem.UserName == userID {
 			return order.ErrOrderAlreadyInsertedByUser

@@ -9,8 +9,9 @@ import (
 )
 
 func main() {
-	debug := false
+	debug := true
 
+	log.Logger = log.With().Str("package", "main").Str("function", "main").Logger()
 	log.Info().Msg("start program")
 
 	if debug {
@@ -24,8 +25,6 @@ func main() {
 	cfg := config.Init()
 
 	log.Debug().Str("package", "app").Str("run address", cfg.RunAddress).Msg("get config")
-	log.Debug().Str("package", "app").Str("accural system address", cfg.AccrualSystemAddress).Msg("get config")
-	log.Debug().Str("package", "app").Str("database URI", cfg.DataBaseURI).Msg("get config")
 
 	app := app.NewApp(cfg)
 

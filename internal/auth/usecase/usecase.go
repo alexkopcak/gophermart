@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha1"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/alexkopcak/gophermart/internal/auth"
@@ -60,7 +59,7 @@ func (auc *AuthUseCase) SignIn(ctx context.Context, userName string, password st
 		return "", err
 	}
 
-	if strings.Compare(pwd, user.Password) != 0 {
+	if pwd != user.Password {
 		return "", auth.ErrBadLoginPassword
 	}
 

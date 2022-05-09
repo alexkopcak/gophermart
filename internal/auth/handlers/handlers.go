@@ -25,7 +25,7 @@ func NewAuthHandler(auc auth.UseCase) *AuthHandler {
 func (h *AuthHandler) SignUp(c *gin.Context) {
 	log.Debug().Str("package", "handlers").Str("func", "SignUp").Msg("start")
 	var user models.User
-	//defer c.Request.Body.Close()
+	defer c.Request.Body.Close()
 
 	if strings.Compare(c.ContentType(), "application/json") != 0 {
 		log.Debug().Str("package", "handlers").Str("func", "SignUp").Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")

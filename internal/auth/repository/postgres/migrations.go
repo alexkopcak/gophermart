@@ -29,8 +29,7 @@ func MakeMigrations(dbURI string) {
 	log.Fatal().Err(err)
 
 	log.Debug().Msg("m up")
-	err = m.Up()
-	log.Fatal().Err(err)
+	log.Fatal().Err(m.Up())
 
 	log.Debug().Msg("migrate exit")
 }
