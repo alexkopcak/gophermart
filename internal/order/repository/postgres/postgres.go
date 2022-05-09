@@ -199,7 +199,7 @@ func (ops *OrderPostgresStorage) WithdrawBalance(ctx context.Context, userID str
 
 	err = ops.db.QueryRow(ctx,
 		"SELECT COALESCE(SUM(accrual), 0) "+
-			"FROM orders ;;;;;;"+
+			"FROM orders "+
 			"WHERE user_id = $1 ;", userID).Scan(&balance)
 
 	if err != nil {
