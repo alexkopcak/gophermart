@@ -31,12 +31,12 @@ func NewPostgresStorage(dbURI string) auth.UserRepository {
 }
 
 func (ps *PostgresStorage) CreateUser(ctx context.Context, user *models.User) error {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "CreateUser").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "CreateUser").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
-	log.Debug().Str("user", user.UserName).Msg("try to add user")
+	logger.Debug().Str("user", user.UserName).Msg("try to add user")
 
 	_, err := ps.db.Exec(ctx,
 		"INSERT INTO users "+
@@ -49,21 +49,21 @@ func (ps *PostgresStorage) CreateUser(ctx context.Context, user *models.User) er
 				return auth.ErrUserAlreadyExsist
 			}
 		}
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return err
 	}
 
-	log.Debug().Msg("user created")
+	logger.Debug().Msg("user created")
 	return nil
 }
 
 func (ps *PostgresStorage) GetUser(ctx context.Context, userName string) (*models.User, error) {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "GetUser").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "GetUser").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
-	log.Debug().Str("user", userName).Msg("get user by name")
+	logger.Debug().Str("user", userName).Msg("get user by name")
 	var user = new(models.User)
 	err := ps.db.QueryRow(ctx,
 		"SELECT login, password "+
@@ -71,14 +71,14 @@ func (ps *PostgresStorage) GetUser(ctx context.Context, userName string) (*model
 			"WHERE login = $1 "+
 			"LIMIT 1;", userName).Scan(&user.UserName, &user.Password)
 	if errors.Is(err, pgx.ErrNoRows) || user.UserName == "" {
-		log.Debug().Str("user", userName).Msg("user not exsist")
+		logger.Debug().Str("user", userName).Msg("user not exsist")
 		return nil, auth.ErrUserNotExsist
 	}
 	if err != nil {
-		log.Err(err).Msg("exit with error")
+		logger.Err(err).Msg("exit with error")
 		return nil, err
 	}
 
-	log.Debug().Str("user", userName).Msg("user finded at storage")
+	logger.Debug().Str("user", userName).Msg("user finded at storage")
 	return user, nil
 }

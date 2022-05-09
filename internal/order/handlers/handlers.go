@@ -30,36 +30,36 @@ func NewOrderHandler(ouc order.UseCase, accrualServiceAddress string) *OrderHand
 }
 
 func (h *OrderHandler) AddNewOrder(c *gin.Context) {
-	log.Logger = log.With().Str("package", "handlers").Str("function", "AddNewOrder").Logger()
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger := log.With().Str("package", "handlers").Str("function", "AddNewOrder").Logger()
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	if strings.Compare(c.ContentType(), "text/plain") != 0 {
-		log.Debug().Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
+		logger.Debug().Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
 		c.String(http.StatusBadRequest, "неверный формат запроса")
 		return
 	}
 
 	buff, err := ioutil.ReadAll(c.Request.Body)
 	var orderID = string(buff)
-	log.Debug().Str("order", orderID).Msg("get order number from request body")
+	logger.Debug().Str("order", orderID).Msg("get order number from request body")
 
 	if err != nil || orderID == "" {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusUnprocessableEntity, "неверный формат номера заказа")
 		return
 	}
 
 	userID, err := getUserID(c)
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	err = h.OrderUseCase.AddNewOrder(c.Request.Context(), userID, orderID)
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		if errors.Is(err, order.ErrOrderAlreadyInsertedByOtherUser) {
 			c.String(http.StatusConflict, "номер заказа уже был загружен другим пользователем")
 			return
@@ -80,7 +80,7 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 		h.AccurualService.UpdateData(orderID)
 	}()
 	c.String(http.StatusAccepted, "новый номер заказа принят в обработку")
-	log.Debug().Msg("new order has accepted")
+	logger.Debug().Msg("new order has accepted")
 }
 
 func getUserID(c *gin.Context) (string, error) {
@@ -98,28 +98,28 @@ func getUserID(c *gin.Context) (string, error) {
 }
 
 func (h *OrderHandler) GetUserOrders(c *gin.Context) {
-	log.Logger = log.With().Str("package", "handlers").Str("function", "GetUserOrders").Logger()
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger := log.With().Str("package", "handlers").Str("function", "GetUserOrders").Logger()
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	userID, err := getUserID(c)
-	log.Debug().Str("user", userID).Msg("get user ID")
+	logger.Debug().Str("user", userID).Msg("get user ID")
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		return
 	}
 
 	orders, err := h.OrderUseCase.GetOrders(c.Request.Context(), userID)
-	log.Debug().Msg("Get user orders")
+	logger.Debug().Msg("Get user orders")
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		return
 	}
 
 	if len(orders) == 0 {
-		log.Debug().Msg("where are no orders")
+		logger.Debug().Msg("where are no orders")
 		c.JSON(http.StatusNoContent, orders)
 		return
 	}
@@ -127,21 +127,21 @@ func (h *OrderHandler) GetUserOrders(c *gin.Context) {
 }
 
 func (h *OrderHandler) GetUserBalance(c *gin.Context) {
-	log.Logger = log.With().Str("package", "handlers").Str("function", "GetUserBalance").Logger()
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger := log.With().Str("package", "handlers").Str("function", "GetUserBalance").Logger()
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	userID, err := getUserID(c)
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		return
 	}
 
 	balance, err := h.OrderUseCase.GetBalance(c.Request.Context(), userID)
-	log.Debug().Float32("current", balance.Current).Float32("withdrawn", balance.Withdrawn).Msg("get user balance")
+	logger.Debug().Float32("current", balance.Current).Float32("withdrawn", balance.Withdrawn).Msg("get user balance")
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		return
 	}
@@ -149,12 +149,12 @@ func (h *OrderHandler) GetUserBalance(c *gin.Context) {
 }
 
 func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
-	log.Logger = log.With().Str("package", "handlers").Str("function", "BalanceWithdraw").Logger()
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger := log.With().Str("package", "handlers").Str("function", "BalanceWithdraw").Logger()
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	if strings.Compare(c.ContentType(), "application/json") != 0 {
-		log.Debug().Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
+		logger.Debug().Str("ContentType", c.ContentType()).Msg("exit with error: bad content type")
 		c.String(http.StatusBadRequest, "неверный формат запроса")
 		return
 	}
@@ -163,20 +163,20 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 	err := json.NewDecoder(c.Request.Body).Decode(&balWithdraw)
 
 	if err != nil || balWithdraw.OrderID == "" {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusUnprocessableEntity, "неверный номер заказа")
 		return
 	}
 
 	userID, err := getUserID(c)
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return
 	}
 	err = h.OrderUseCase.BalanceWithdraw(c.Request.Context(), userID, &balWithdraw)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		if errors.Is(err, order.ErrOrderBadNumber) {
 			c.String(http.StatusUnprocessableEntity, "неверный номер заказа")
 			return
@@ -187,23 +187,23 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 	}
 
 	c.String(http.StatusOK, "успешная обработка запроса")
-	log.Debug().Msg("query was handled succefuly")
+	logger.Debug().Msg("query was handled succefuly")
 }
 
 func (h *OrderHandler) Withdrawals(c *gin.Context) {
-	log.Logger = log.With().Str("package", "handlers").Str("function", "Withdrawals").Logger()
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger := log.With().Str("package", "handlers").Str("function", "Withdrawals").Logger()
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	userID, err := getUserID(c)
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return
 	}
 
 	withdrawls, err := h.OrderUseCase.Withdrawals(c.Request.Context(), userID)
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		return
 	}

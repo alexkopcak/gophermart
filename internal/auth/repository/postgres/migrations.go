@@ -11,29 +11,29 @@ import (
 )
 
 func MakeMigrations(dbURI string) {
-	log.Logger = log.With().Str("package", "postgres").Str("function", "MakeMigrations").Logger()
+	logger := log.With().Str("package", "postgres").Str("function", "MakeMigrations").Logger()
 
-	log.Debug().Msg("make migrations")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("make migrations")
+	defer logger.Debug().Msg("exit")
 	db, err := sql.Open("postgres", dbURI)
-	log.Fatal().Err(err)
+	logger.Fatal().Err(err)
 
-	log.Debug().Msg("set driver")
+	logger.Debug().Msg("set driver")
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
-	log.Fatal().Err(err)
+	logger.Fatal().Err(err)
 
-	log.Debug().Msg("set instance")
+	logger.Debug().Msg("set instance")
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://internal/auth/repository/postgres/migrations",
 		"postgres",
 		driver)
-	log.Fatal().Err(err)
+	logger.Fatal().Err(err)
 
 	if m == nil {
-		log.Panic().Msg("can't create migrate instance")
+		logger.Panic().Msg("can't create migrate instance")
 	}
-	log.Debug().Msg("m up")
-	log.Fatal().Err(m.Up())
+	logger.Debug().Msg("m up")
+	logger.Fatal().Err(m.Up())
 
-	log.Debug().Msg("migrate exit")
+	logger.Debug().Msg("migrate exit")
 }

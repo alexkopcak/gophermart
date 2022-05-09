@@ -16,9 +16,6 @@ type OrderPostgresStorage struct {
 }
 
 func NewOrderPostgresStorage(dbURI string) order.OrderRepository {
-	log.Debug().Msg("new order postgres storage")
-
-	log.Debug().Msg("pgx connect")
 	conn, err := pgx.Connect(context.Background(), dbURI)
 	if err != nil {
 		log.Fatal().Err(err)
@@ -29,10 +26,10 @@ func NewOrderPostgresStorage(dbURI string) order.OrderRepository {
 }
 
 func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNumber string) (*models.Order, error) {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "GetOrderByOrderUID").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "GetOrderByOrderUID").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	var result = new(models.Order)
 	var accrual int32
@@ -45,7 +42,7 @@ func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNu
 		Scan(&result.UserName, &result.Number, &result.Status, &accrual, &timeValue)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		if err == pgx.ErrNoRows {
 			return nil, nil
 		}
@@ -55,7 +52,7 @@ func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNu
 	result.Accrual = float32(accrual) / 100
 	result.Uploaded = timeValue.Time.Format(time.RFC3339)
 
-	log.Debug().Str("order.user", result.UserName).
+	logger.Debug().Str("order.user", result.UserName).
 		Str("order.id", result.Number).
 		Str("order.status", result.Status).
 		Float32("order.accrual", result.Accrual).
@@ -66,10 +63,10 @@ func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNu
 }
 
 func (ops *OrderPostgresStorage) InsertOrder(ctx context.Context, userID string, orderNumber string) error {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "InsertOrder").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "InsertOrder").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	cTag, err := ops.db.Exec(ctx,
 		"INSERT INTO orders "+
@@ -79,7 +76,7 @@ func (ops *OrderPostgresStorage) InsertOrder(ctx context.Context, userID string,
 		userID, orderNumber, models.OrderStatusNew, 0)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return err
 	}
 
@@ -100,10 +97,10 @@ func (ops *OrderPostgresStorage) InsertOrder(ctx context.Context, userID string,
 }
 
 func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, userID string) ([]models.Order, error) {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "GetOrdersListByUserID").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "GetOrdersListByUserID").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	result := make([]models.Order, 0)
 
@@ -114,7 +111,7 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 			"ORDER BY uploaded_at ASC;", userID)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return nil, err
 	}
 	defer rows.Close()
@@ -127,10 +124,10 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 		item.Accrual = float32(accrual) / 100
 		item.Uploaded = timeValue.Time.Format(time.RFC3339)
 		if err != nil {
-			log.Debug().Err(err).Msg("exit with error")
+			logger.Debug().Err(err).Msg("exit with error")
 			return nil, err
 		}
-		log.Debug().Str("order.user", item.UserName).
+		logger.Debug().Str("order.user", item.UserName).
 			Str("order.id", item.Number).
 			Str("order.status", item.Status).
 			Float32("order.accrual", item.Accrual).
@@ -144,10 +141,10 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 }
 
 func (ops *OrderPostgresStorage) GetBalanceByUserID(ctx context.Context, userID string) (*models.Balance, error) {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "GetBalanceByUserID").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "GetBalanceByUserID").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	var accrual int32
 	err := ops.db.QueryRow(ctx,
@@ -156,7 +153,7 @@ func (ops *OrderPostgresStorage) GetBalanceByUserID(ctx context.Context, userID 
 			"WHERE (user_id = $1);", userID).Scan(&accrual)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return nil, err
 	}
 
@@ -167,7 +164,7 @@ func (ops *OrderPostgresStorage) GetBalanceByUserID(ctx context.Context, userID 
 			"WHERE (debet IS FALSE) AND (user_id = $1);", userID).Scan(&withdrawn)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return nil, err
 	}
 
@@ -180,18 +177,18 @@ func (ops *OrderPostgresStorage) GetBalanceByUserID(ctx context.Context, userID 
 }
 
 func (ops *OrderPostgresStorage) WithdrawBalance(ctx context.Context, userID string, bw *models.BalanceWithdraw) error {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "WithdrawBalance").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "WithdrawBalance").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	orderItem, err := ops.GetOrderByOrderUID(ctx, bw.OrderID)
 	if orderItem != nil {
-		log.Debug().Msg("Bad order number")
+		logger.Debug().Msg("Bad order number")
 		return order.ErrOrderBadNumber
 	}
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return nil
 	}
 
@@ -203,12 +200,12 @@ func (ops *OrderPostgresStorage) WithdrawBalance(ctx context.Context, userID str
 			"WHERE user_id = $1 ;", userID).Scan(&balance)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return nil
 	}
 
 	if float32(balance)/100 < bw.Sum {
-		log.Debug().Msg("not enougth balance")
+		logger.Debug().Msg("not enougth balance")
 		return order.ErrNotEnougthBalance
 	}
 
@@ -218,15 +215,15 @@ func (ops *OrderPostgresStorage) WithdrawBalance(ctx context.Context, userID str
 			"VALUES ($1, $2, FALSE, $3, $4);",
 		userID, bw.OrderID, models.OrderStatusWithDrawn, -100*bw.Sum)
 
-	log.Debug().Err(err).Msg("exit with error")
+	logger.Debug().Err(err).Msg("exit with error")
 	return err
 }
 
 func (ops *OrderPostgresStorage) Withdrawals(ctx context.Context, userID string) ([]*models.Withdrawals, error) {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "Withdrawals").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "Withdrawals").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	result := make([]*models.Withdrawals, 0)
 
@@ -237,7 +234,7 @@ func (ops *OrderPostgresStorage) Withdrawals(ctx context.Context, userID string)
 			"ORDER BY uploaded_at ASC;", userID, models.OrderStatusWithDrawn)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return nil, err
 	}
 	defer rows.Close()
@@ -259,26 +256,26 @@ func (ops *OrderPostgresStorage) Withdrawals(ctx context.Context, userID string)
 }
 
 func (ops *OrderPostgresStorage) UpdateOrder(ctx context.Context, orderNumber string, orderStatus string, orderAccrual int32) error {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "UpdateOrder").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "UpdateOrder").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
-	log.Debug().Str("orderStatus", orderStatus).Str("orderNumber", orderNumber).Int32("orderAccurual", orderAccrual).Msg("before query")
+	logger.Debug().Str("orderStatus", orderStatus).Str("orderNumber", orderNumber).Int32("orderAccurual", orderAccrual).Msg("before query")
 	comTag, err := ops.db.Exec(context.Background(),
 		"UPDATE orders SET order_status = $1 , accrual = $2 WHERE order_id = $3 ;",
 		orderStatus, orderAccrual, orderNumber)
 
-	log.Debug().Int64("Count", comTag.RowsAffected()).Msg("Rows affected")
-	log.Debug().Err(err).Msg("exit with error")
+	logger.Debug().Int64("Count", comTag.RowsAffected()).Msg("Rows affected")
+	logger.Debug().Err(err).Msg("exit with error")
 	return err
 }
 
 func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error) {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "GetNotFinnalizedOrdersListByUserID").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "GetNotFinnalizedOrdersListByUserID").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	result := make([]*models.Order, 0)
 
@@ -289,7 +286,7 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 			"ORDER BY uploaded_at ASC;", userID, models.OrderStatusProcessed, models.OrderStatusInvalid)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return nil, err
 	}
 	defer rows.Close()
@@ -300,7 +297,7 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 		var uploaded pgtype.Timestamp
 		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &accrual, &uploaded)
 		if err != nil {
-			log.Debug().Err(err)
+			logger.Debug().Err(err)
 			return nil, nil
 		}
 		item.Accrual = float32(accrual) / 100
@@ -312,10 +309,10 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersListByUserID(ctx context.
 }
 
 func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersList(ctx context.Context) ([]*models.Order, error) {
-	log.Logger = log.With().Str("package", "postgres").Str("func", "GetNotFinnalizedOrdersList").Logger()
+	logger := log.With().Str("package", "postgres").Str("func", "GetNotFinnalizedOrdersList").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	result := make([]*models.Order, 0)
 
@@ -326,7 +323,7 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersList(ctx context.Context)
 			"ORDER BY uploaded_at ASC;", models.OrderStatusProcessed, models.OrderStatusInvalid)
 
 	if err != nil {
-		log.Debug().Err(err).Msg("exit with error")
+		logger.Debug().Err(err).Msg("exit with error")
 		return nil, err
 	}
 	defer rows.Close()
@@ -337,7 +334,7 @@ func (ops *OrderPostgresStorage) GetNotFinnalizedOrdersList(ctx context.Context)
 		var uploaded pgtype.Timestamp
 		err := rows.Scan(&item.UserName, &item.Number, &item.Status, &accrual, &uploaded)
 		if err != nil {
-			log.Debug().Err(err)
+			logger.Debug().Err(err)
 			return nil, nil
 		}
 		item.Accrual = float32(accrual) / 100

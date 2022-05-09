@@ -24,9 +24,9 @@ type App struct {
 }
 
 func NewApp(cfg *config.Config) *App {
-	log.Logger = log.With().Str("package", "app").Str("function", "NewApp").Logger()
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger := log.With().Str("package", "app").Str("function", "NewApp").Logger()
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
 	//userRepo := authlocalstorage.NewUserLocalStorage()
 	userRepo := authdb.NewPostgresStorage(cfg.DataBaseURI)
@@ -45,15 +45,15 @@ func NewApp(cfg *config.Config) *App {
 }
 
 func (app *App) Run() error {
-	log.Logger = log.With().Str("package", "app").Str("func", "run").Logger()
+	logger := log.With().Str("package", "app").Str("func", "run").Logger()
 
-	log.Debug().Msg("enter")
-	defer log.Debug().Msg("exit")
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
 
-	log.Debug().Msg("create new gin engine object")
+	logger.Debug().Msg("create new gin engine object")
 	app.server = httpserver.NewGinEngine(app.authUC, app.orderUC, app.config.AccrualSystemAddress)
 
-	log.Fatal().Err(app.server.Run(app.config.RunAddress))
+	logger.Fatal().Err(app.server.Run(app.config.RunAddress))
 
 	return nil
 }

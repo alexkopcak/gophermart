@@ -11,9 +11,9 @@ import (
 func main() {
 	debug := true
 
-	log.Logger = log.With().Str("package", "main").Str("function", "main").Logger()
-	log.Info().Msg("start program")
-	defer log.Info().Msg("exit program")
+	logger := log.With().Str("package", "main").Str("function", "main").Logger()
+	logger.Info().Msg("start program")
+	defer logger.Info().Msg("exit program")
 
 	if debug {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
@@ -25,9 +25,9 @@ func main() {
 
 	cfg := config.Init()
 
-	log.Debug().Str("run address", cfg.RunAddress).Msg("get config")
+	logger.Debug().Str("run address", cfg.RunAddress).Msg("get config")
 
 	app := app.NewApp(cfg)
 
-	log.Fatal().Err(app.Run())
+	logger.Fatal().Err(app.Run())
 }
