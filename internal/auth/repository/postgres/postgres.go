@@ -83,6 +83,6 @@ func (ps *PostgresStorage) GetUser(ctx context.Context, userName string) (*model
 		return nil, err
 	}
 
-	logger.Debug().Str("user", userName).Msg("user finded at storage")
+	logger.Debug().Str("user", userName).Int32("userID", user.ID).Msg("user finded at storage")
 	return user, nil
 }
