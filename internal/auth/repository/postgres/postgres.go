@@ -39,10 +39,12 @@ func (ps *PostgresStorage) CreateUser(ctx context.Context, user *models.User) er
 
 	logger.Debug().Str("user", user.UserName).Msg("try to add user")
 
-	_, err := ps.db.Exec(ctx,
+	var id int32
+	err := ps.db.QueryRow(ctx,
 		"INSERT INTO users "+
 			"(login, password) "+
-			"VALUES ($1, $2);", user.UserName, user.Password)
+			"VALUES ($1, $2) "+
+			"RETURNING id", user.UserName, user.Password).Scan(&id)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -54,6 +56,7 @@ func (ps *PostgresStorage) CreateUser(ctx context.Context, user *models.User) er
 		return err
 	}
 
+	user.ID = id
 	logger.Debug().Msg("user created")
 	return nil
 }
@@ -67,10 +70,10 @@ func (ps *PostgresStorage) GetUser(ctx context.Context, userName string) (*model
 	logger.Debug().Str("user", userName).Msg("get user by name")
 	var user = new(models.User)
 	err := ps.db.QueryRow(ctx,
-		"SELECT login, password "+
+		"SELECT id, login, password "+
 			"FROM users "+
 			"WHERE login = $1 "+
-			"LIMIT 1;", userName).Scan(&user.UserName, &user.Password)
+			"LIMIT 1", userName).Scan(&user.ID, &user.UserName, &user.Password)
 	if errors.Is(err, pgx.ErrNoRows) || user.UserName == "" {
 		logger.Debug().Str("user", userName).Msg("user not exsist")
 		return nil, auth.ErrUserNotExsist

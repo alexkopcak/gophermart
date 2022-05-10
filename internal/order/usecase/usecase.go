@@ -31,7 +31,7 @@ func checkOrderID(orderID string) error {
 	return nil
 }
 
-func (ouc *OrderUseCase) AddNewOrder(ctx context.Context, userID string, orderNumber string) error {
+func (ouc *OrderUseCase) AddNewOrder(ctx context.Context, userID int32, orderNumber string) error {
 	err := checkOrderID(orderNumber)
 	if err != nil {
 		return err
@@ -39,15 +39,15 @@ func (ouc *OrderUseCase) AddNewOrder(ctx context.Context, userID string, orderNu
 	return ouc.orderRepo.InsertOrder(ctx, userID, orderNumber)
 }
 
-func (ouc *OrderUseCase) GetOrders(ctx context.Context, userID string) ([]models.Order, error) {
+func (ouc *OrderUseCase) GetOrders(ctx context.Context, userID int32) ([]models.Order, error) {
 	return ouc.orderRepo.GetOrdersListByUserID(ctx, userID)
 }
 
-func (ouc *OrderUseCase) GetBalance(ctx context.Context, useerID string) (*models.Balance, error) {
+func (ouc *OrderUseCase) GetBalance(ctx context.Context, useerID int32) (*models.Balance, error) {
 	return ouc.orderRepo.GetBalanceByUserID(ctx, useerID)
 }
 
-func (ouc *OrderUseCase) BalanceWithdraw(ctx context.Context, userID string, bw *models.BalanceWithdraw) error {
+func (ouc *OrderUseCase) BalanceWithdraw(ctx context.Context, userID int32, bw *models.BalanceWithdraw) error {
 	err := checkOrderID(bw.OrderID)
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (ouc *OrderUseCase) BalanceWithdraw(ctx context.Context, userID string, bw 
 	return ouc.orderRepo.WithdrawBalance(ctx, userID, bw)
 }
 
-func (ouc *OrderUseCase) Withdrawals(ctx context.Context, userID string) ([]*models.Withdrawals, error) {
+func (ouc *OrderUseCase) Withdrawals(ctx context.Context, userID int32) ([]*models.Withdrawals, error) {
 	return ouc.orderRepo.Withdrawals(ctx, userID)
 }
 
@@ -64,7 +64,7 @@ func (ouc *OrderUseCase) UpdateOrder(ctx context.Context, orderNumber string, or
 	return ouc.orderRepo.UpdateOrder(ctx, orderNumber, orderStatus, orderAccrual)
 }
 
-func (ouc *OrderUseCase) GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error) {
+func (ouc *OrderUseCase) GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID int32) ([]*models.Order, error) {
 	return ouc.orderRepo.GetNotFinnalizedOrdersListByUserID(ctx, userID)
 }
 

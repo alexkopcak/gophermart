@@ -25,14 +25,14 @@ func AuthMiddlewareHandle(auc auth.UseCase) gin.HandlerFunc {
 		}
 
 		user, err := auc.ParseToken(c.Request.Context(), token)
-		logger.Debug().Str("user", user.UserName).Msg("user from jw token")
+		logger.Debug().Str("user", user.UserName).Int32("userID", user.ID).Msg("user from jw token")
 
 		if err != nil || user.UserName == "" {
 			logger.Debug().Err(err).Msg("exit with error")
 			c.String(http.StatusUnauthorized, "пользователь не аутентифицирован")
 			return
 		}
-		c.Set(auth.CtxUserKey, user.UserName)
+		c.Set(auth.CtxUserKey, user.ID)
 		c.Next()
 	}
 }

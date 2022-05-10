@@ -57,13 +57,13 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 	}
 
 	userID, err := getUserID(c)
-	if err != nil {
+	if err != nil || userID != nil {
 		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	err = h.OrderUseCase.AddNewOrder(c.Request.Context(), userID, orderID)
+	err = h.OrderUseCase.AddNewOrder(c.Request.Context(), *userID, orderID)
 	if err != nil {
 		logger.Debug().Err(err).Msg("exit with error")
 		if errors.Is(err, order.ErrOrderAlreadyInsertedByOtherUser) {
@@ -89,18 +89,18 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 	logger.Debug().Msg("new order has accepted")
 }
 
-func getUserID(c *gin.Context) (string, error) {
+func getUserID(c *gin.Context) (*int32, error) {
 	user, exsists := c.Get(auth.CtxUserKey)
 	if !exsists {
 		c.String(http.StatusUnauthorized, "пользователь не аутентифицирован")
-		return "", order.ErrUserNotAuthtorised
+		return nil, order.ErrUserNotAuthtorised
 	}
-	userID, ok := user.(string)
+	userID, ok := user.(int32)
 	if !ok {
 		c.String(http.StatusInternalServerError, "не могу получить пользователя")
-		return userID, errors.New("не могу получить пользователя")
+		return &userID, errors.New("не могу получить пользователя")
 	}
-	return userID, nil
+	return &userID, nil
 }
 
 func (h *OrderHandler) GetUserOrders(c *gin.Context) {
@@ -109,14 +109,14 @@ func (h *OrderHandler) GetUserOrders(c *gin.Context) {
 	defer logger.Debug().Msg("exit")
 
 	userID, err := getUserID(c)
-	logger.Debug().Str("user", userID).Msg("get user ID")
+	logger.Debug().Int32("user", *userID).Msg("get user ID")
 	if err != nil {
 		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		return
 	}
 
-	orders, err := h.OrderUseCase.GetOrders(c.Request.Context(), userID)
+	orders, err := h.OrderUseCase.GetOrders(c.Request.Context(), *userID)
 	logger.Debug().Msg("Get user orders")
 	if err != nil {
 		logger.Debug().Err(err).Msg("exit with error")
@@ -150,13 +150,13 @@ func (h *OrderHandler) GetUserBalance(c *gin.Context) {
 	defer logger.Debug().Msg("exit")
 
 	userID, err := getUserID(c)
-	if err != nil {
+	if err != nil || userID != nil {
 		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")
 		return
 	}
 
-	balance, err := h.OrderUseCase.GetBalance(c.Request.Context(), userID)
+	balance, err := h.OrderUseCase.GetBalance(c.Request.Context(), *userID)
 	logger.Debug().Float32("current", balance.Current).Float32("withdrawn", balance.Withdrawn).Msg("get user balance")
 	if err != nil {
 		logger.Debug().Err(err).Msg("exit with error")
@@ -187,11 +187,11 @@ func (h *OrderHandler) BalanceWithdraw(c *gin.Context) {
 	}
 
 	userID, err := getUserID(c)
-	if err != nil {
+	if err != nil || userID != nil {
 		logger.Debug().Err(err).Msg("exit with error")
 		return
 	}
-	err = h.OrderUseCase.BalanceWithdraw(c.Request.Context(), userID, &balWithdraw)
+	err = h.OrderUseCase.BalanceWithdraw(c.Request.Context(), *userID, &balWithdraw)
 
 	if err != nil {
 		logger.Debug().Err(err).Msg("exit with error")
@@ -214,12 +214,12 @@ func (h *OrderHandler) Withdrawals(c *gin.Context) {
 	defer logger.Debug().Msg("exit")
 
 	userID, err := getUserID(c)
-	if err != nil {
+	if err != nil || userID != nil {
 		logger.Debug().Err(err).Msg("exit with error")
 		return
 	}
 
-	withdrawls, err := h.OrderUseCase.Withdrawals(c.Request.Context(), userID)
+	withdrawls, err := h.OrderUseCase.Withdrawals(c.Request.Context(), *userID)
 	if err != nil {
 		logger.Debug().Err(err).Msg("exit with error")
 		c.String(http.StatusInternalServerError, "внутренняя ошибка сервера")

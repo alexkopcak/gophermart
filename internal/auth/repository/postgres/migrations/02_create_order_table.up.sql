@@ -1,5 +1,6 @@
 CREATE TABLE orders (
-    user_id VARCHAR(255),
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users (id),
     order_id VARCHAR(255) UNIQUE,
     debet BOOLEAN,
     order_status VARCHAR(255),

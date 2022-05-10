@@ -11,7 +11,7 @@ const (
 )
 
 type Order struct {
-	UserName string           `json:"-"`
+	UserName int32            `json:"-"`
 	Number   string           `json:"number"`
 	Status   string           `json:"status"`
 	Accrual  float32          `json:"accrual,omitempty"`

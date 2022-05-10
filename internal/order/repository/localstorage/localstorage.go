@@ -9,7 +9,7 @@ import (
 )
 
 type OrderItem struct {
-	UserID  string
+	UserID  int32
 	Number  string
 	Debet   bool
 	Status  string
@@ -27,7 +27,7 @@ func NewOrderLocalStorage() order.OrderRepository {
 	}
 }
 
-func (ols *OrderLocalStorage) InsertOrder(ctx context.Context, userID string, orderNumber string) error {
+func (ols *OrderLocalStorage) InsertOrder(ctx context.Context, userID int32, orderNumber string) error {
 	orderItem, _ := ols.GetOrderByOrderUID(ctx, userID, orderNumber)
 	if orderItem != nil {
 		if orderItem.UserName == userID {
@@ -50,7 +50,7 @@ func (ols *OrderLocalStorage) InsertOrder(ctx context.Context, userID string, or
 	return nil
 }
 
-func (ols *OrderLocalStorage) GetOrdersListByUserID(ctx context.Context, userID string) ([]models.Order, error) {
+func (ols *OrderLocalStorage) GetOrdersListByUserID(ctx context.Context, userID int32) ([]models.Order, error) {
 	result := make([]models.Order, 0)
 	for _, item := range ols.order {
 		if item.UserID == userID {
@@ -67,7 +67,7 @@ func (ols *OrderLocalStorage) GetOrdersListByUserID(ctx context.Context, userID 
 	return result, nil
 }
 
-func (ols *OrderLocalStorage) GetBalanceByUserID(ctx context.Context, userID string) (*models.Balance, error) {
+func (ols *OrderLocalStorage) GetBalanceByUserID(ctx context.Context, userID int32) (*models.Balance, error) {
 	var result = new(models.Balance)
 	for _, item := range ols.order {
 		if item.UserID == userID {
@@ -81,7 +81,7 @@ func (ols *OrderLocalStorage) GetBalanceByUserID(ctx context.Context, userID str
 	return result, nil
 }
 
-func (ols *OrderLocalStorage) GetOrderByOrderUID(ctx context.Context, userID string, orderNumber string) (*models.Order, error) {
+func (ols *OrderLocalStorage) GetOrderByOrderUID(ctx context.Context, userID int32, orderNumber string) (*models.Order, error) {
 	for _, item := range ols.order {
 		if item.Number == orderNumber && item.Debet && item.UserID == userID {
 			return &models.Order{
@@ -96,7 +96,7 @@ func (ols *OrderLocalStorage) GetOrderByOrderUID(ctx context.Context, userID str
 	return nil, nil
 }
 
-func (ols *OrderLocalStorage) WithdrawBalance(ctx context.Context, userID string, bw *models.BalanceWithdraw) error {
+func (ols *OrderLocalStorage) WithdrawBalance(ctx context.Context, userID int32, bw *models.BalanceWithdraw) error {
 	balance, err := ols.GetBalanceByUserID(ctx, userID)
 	if err != nil {
 		return err
@@ -124,7 +124,7 @@ func (ols *OrderLocalStorage) WithdrawBalance(ctx context.Context, userID string
 	return nil
 }
 
-func (ols *OrderLocalStorage) Withdrawals(ctx context.Context, userID string) ([]*models.Withdrawals, error) {
+func (ols *OrderLocalStorage) Withdrawals(ctx context.Context, userID int32) ([]*models.Withdrawals, error) {
 	result := make([]*models.Withdrawals, 0)
 	for _, item := range ols.order {
 		if item.UserID == userID && !item.Debet {
@@ -151,7 +151,7 @@ func (ols *OrderLocalStorage) UpdateOrder(ctx context.Context, orderNumber strin
 	return nil
 }
 
-func (ols *OrderLocalStorage) GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID string) ([]*models.Order, error) {
+func (ols *OrderLocalStorage) GetNotFinnalizedOrdersListByUserID(ctx context.Context, userID int32) ([]*models.Order, error) {
 	result := make([]*models.Order, 0)
 	for _, item := range ols.order {
 		if item.UserID == userID && (item.Status == models.OrderStatusNew || item.Status == models.OrderStatusProcessing) {
