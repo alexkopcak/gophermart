@@ -34,6 +34,7 @@ func (ops *OrderPostgresStorage) GetOrderByOrderUID(ctx context.Context, orderNu
 	var accrual int32
 	var timeValue pgtype.Timestamp
 
+	logger.Debug().Str("orderNumber", orderNumber).Msg("try to get order")
 	err := ops.db.QueryRow(ctx,
 		"SELECT user_id, order_id, order_status, accrual, uploaded_at "+
 			"FROM orders "+
@@ -66,6 +67,8 @@ func (ops *OrderPostgresStorage) InsertOrder(ctx context.Context, userID int32, 
 
 	logger.Debug().Msg("enter")
 	defer logger.Debug().Msg("exit")
+
+	logger.Debug().Int32("userID", userID).Str("orderNumber", orderNumber).Msg("try to add new order")
 
 	cTag, err := ops.db.Exec(ctx,
 		"INSERT INTO orders "+
@@ -103,6 +106,7 @@ func (ops *OrderPostgresStorage) GetOrdersListByUserID(ctx context.Context, user
 
 	result := make([]models.Order, 0)
 
+	logger.Debug().Int32("userID", userID).Msg("try to get order list by user id")
 	rows, err := ops.db.Query(ctx,
 		"SELECT user_id, order_id, order_status, accrual, uploaded_at "+
 			"FROM orders "+
@@ -145,6 +149,7 @@ func (ops *OrderPostgresStorage) GetBalanceByUserID(ctx context.Context, userID 
 	logger.Debug().Msg("enter")
 	defer logger.Debug().Msg("exit")
 
+	logger.Debug().Int32("userID", userID).Msg("try to get balance by userID")
 	var accrual int32
 	err := ops.db.QueryRow(ctx,
 		"SELECT COALESCE(SUM(accrual), 0) "+
@@ -181,6 +186,7 @@ func (ops *OrderPostgresStorage) WithdrawBalance(ctx context.Context, userID int
 	logger.Debug().Msg("enter")
 	defer logger.Debug().Msg("exit")
 
+	logger.Debug().Int32("userID", userID).Str("orderNumber", bw.OrderID).Float32("sum", bw.Sum).Msg("try to withdraw balance")
 	orderItem, err := ops.GetOrderByOrderUID(ctx, bw.OrderID)
 	if orderItem != nil {
 		logger.Debug().Msg("Bad order number")

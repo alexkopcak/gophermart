@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/alexkopcak/gophermart/internal/auth"
@@ -21,8 +22,9 @@ type OrderHandler struct {
 	AccurualService *integration.AccurualService
 }
 
-func NewOrderHandler(ouc order.UseCase, accrualServiceAddress string) *OrderHandler {
-	accrualService := integration.NewAccurualService(accrualServiceAddress, ouc)
+func NewOrderHandler(wg *sync.WaitGroup, uc chan *string, ouc order.UseCase, accrualServiceAddress string) *OrderHandler {
+	accrualService := integration.NewAccurualService(wg, uc, accrualServiceAddress, ouc)
+	accrualService.StartUpdateWorker()
 
 	return &OrderHandler{
 		OrderUseCase:    ouc,
@@ -82,9 +84,9 @@ func (h *OrderHandler) AddNewOrder(c *gin.Context) {
 		return
 	}
 
-	go func() {
-		h.AccurualService.UpdateData(orderID)
-	}()
+	logger.Debug().Str("orderID", orderID).Msg("orderID sent to accurual service")
+	h.AccurualService.UpdateChannel <- &orderID
+
 	c.String(http.StatusAccepted, "новый номер заказа принят в обработку")
 	logger.Debug().Msg("new order has accepted")
 }

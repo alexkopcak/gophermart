@@ -1,6 +1,8 @@
 package app
 
 import (
+	"sync"
+
 	"github.com/alexkopcak/gophermart/internal/auth"
 	authdb "github.com/alexkopcak/gophermart/internal/auth/repository/postgres"
 	authusecase "github.com/alexkopcak/gophermart/internal/auth/usecase"
@@ -47,13 +49,18 @@ func NewApp(cfg *config.Config) *App {
 func (app *App) Run() error {
 	logger := log.With().Str("package", "app").Str("func", "run").Logger()
 
+	wg := &sync.WaitGroup{}
+	uChannel := make(chan *string)
+
 	logger.Debug().Msg("enter")
 	defer logger.Debug().Msg("exit")
 
 	logger.Debug().Msg("create new gin engine object")
-	app.server = httpserver.NewGinEngine(app.authUC, app.orderUC, app.config.AccrualSystemAddress)
+	app.server = httpserver.NewGinEngine(wg, uChannel, app.authUC, app.orderUC, app.config.AccrualSystemAddress)
 
 	logger.Fatal().Err(app.server.Run(app.config.RunAddress))
 
+	close(uChannel)
+	wg.Wait()
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/alexkopcak/gophermart/internal/models"
@@ -22,12 +23,34 @@ type Order struct {
 type AccurualService struct {
 	AccrualSystemAddress string
 	OrderUseCase         order.UseCase
+	WaitGroup            *sync.WaitGroup
+	UpdateChannel        chan *string
 }
 
-func NewAccurualService(address string, usecase order.UseCase) *AccurualService {
+func NewAccurualService(wg *sync.WaitGroup, uc chan *string, address string, usecase order.UseCase) *AccurualService {
 	return &AccurualService{
 		AccrualSystemAddress: address,
 		OrderUseCase:         usecase,
+		WaitGroup:            wg,
+		UpdateChannel:        uc,
+	}
+}
+
+func (as *AccurualService) StartUpdateWorker() {
+	workerCount := 3
+
+	for i := 0; i < workerCount; i++ {
+		as.WaitGroup.Add(1)
+		go as.updateWorker(as.WaitGroup, as.UpdateChannel)
+	}
+
+}
+
+func (as *AccurualService) updateWorker(wg *sync.WaitGroup, uChan <-chan *string) {
+	defer wg.Done()
+
+	for job := range uChan {
+		as.UpdateData(*job)
 	}
 }
 

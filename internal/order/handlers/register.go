@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"sync"
+
 	"github.com/alexkopcak/gophermart/internal/order"
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterHTTPEndpoints(router *gin.Engine, midlleware gin.HandlerFunc, ouc order.UseCase, asAddress string) {
-	handler := NewOrderHandler(ouc, asAddress)
+func RegisterHTTPEndpoints(wg *sync.WaitGroup, uChannel chan *string, router *gin.Engine, midlleware gin.HandlerFunc, ouc order.UseCase, asAddress string) {
+	handler := NewOrderHandler(wg, uChannel, ouc, asAddress)
 
 	routes := router.Use(midlleware)
 

@@ -1,6 +1,8 @@
 package httpserver
 
 import (
+	"sync"
+
 	"github.com/alexkopcak/gophermart/internal/auth"
 	authhandlers "github.com/alexkopcak/gophermart/internal/auth/handlers"
 	"github.com/alexkopcak/gophermart/internal/order"
@@ -10,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewGinEngine(auc auth.UseCase, ouc order.UseCase, asaddress string) *gin.Engine {
+func NewGinEngine(wg *sync.WaitGroup, uChannel chan *string, auc auth.UseCase, ouc order.UseCase, asaddress string) *gin.Engine {
 	router := gin.Default()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -20,7 +22,7 @@ func NewGinEngine(auc auth.UseCase, ouc order.UseCase, asaddress string) *gin.En
 
 	authhandlers.RegisterHTTPEndpoints(router, auc)
 
-	orderhandlers.RegisterHTTPEndpoints(router, authhandlers.AuthMiddlewareHandle(auc), ouc, asaddress)
+	orderhandlers.RegisterHTTPEndpoints(wg, uChannel, router, authhandlers.AuthMiddlewareHandle(auc), ouc, asaddress)
 
 	return router
 }
