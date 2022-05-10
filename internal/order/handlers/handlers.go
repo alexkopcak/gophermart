@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -35,6 +36,27 @@ func NewOrderHandler(wg *sync.WaitGroup, uc chan *string, ouc order.UseCase, acc
 type orderItem struct {
 	models.Order
 	Uploaded string `json:"uploaded_at"`
+}
+
+func (h *OrderHandler) UpdateNotFinnalizedOrders() {
+	logger := log.With().Str("package", "handlers").Str("function", "UpdateUnhandledOrders").Logger()
+	logger.Debug().Msg("enter")
+	defer logger.Debug().Msg("exit")
+
+	logger.Debug().Msg("Get")
+	orders, err := h.OrderUseCase.GetNotFinnalizedOrdersList(context.Background())
+
+	if err != nil {
+		logger.Debug().Err(err).Msg("exit with error")
+	}
+	logger.Debug().Int("len(orders)", len(orders)).Msg("Not finnalized orders count")
+	if len(orders) == 0 {
+		return
+	}
+
+	for _, item := range orders {
+		h.AccurualService.UpdateChannel <- &item.Number
+	}
 }
 
 func (h *OrderHandler) AddNewOrder(c *gin.Context) {

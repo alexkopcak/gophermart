@@ -9,6 +9,7 @@ import (
 
 func RegisterHTTPEndpoints(wg *sync.WaitGroup, uChannel chan *string, router *gin.Engine, midlleware gin.HandlerFunc, ouc order.UseCase, asAddress string) {
 	handler := NewOrderHandler(wg, uChannel, ouc, asAddress)
+	handler.UpdateNotFinnalizedOrders()
 
 	routes := router.Use(midlleware)
 
