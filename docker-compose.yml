@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  postgres:
+    container_name: postgres_container
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: "gophermart"
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "pass"
+    ports:
+      - "5432:5432"
+
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:5.7
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "user@gophermart.com"
+      PGADMIN_DEFAULT_PASSWORD: "pass"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
