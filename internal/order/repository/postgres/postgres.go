@@ -253,7 +253,7 @@ func (ops *OrderPostgresStorage) Withdrawals(ctx context.Context, userID int32) 
 			return nil, nil
 		}
 		item.Sum = float32(sum) / 100
-		item.ProcessedAt = processedAt
+		item.ProcessedAt = processedAt.Time
 		result = append(result, &item)
 	}
 
